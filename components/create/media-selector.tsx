@@ -3,12 +3,13 @@
 import type React from "react"
 
 import { useState } from "react"
+import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Search, Upload, X, Play, Pause, Volume2, VolumeX } from "lucide-react"
+import { Search, Upload, X, Play, Pause, Volume2, VolumeX, Image as ImageIcon, Music, Sparkles } from "lucide-react"
 import { soundEffects } from "@/lib/data"
 
 interface MediaSelectorProps {
@@ -77,18 +78,28 @@ export default function MediaSelector({ gifs, audio, soundEffect, onUpdate }: Me
 
   return (
     <div>
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-2">Add Media to Your Exit Page</h2>
+      {/* Animated/illustrated header */}
+      <div className="flex flex-col items-center mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <motion.div
+            initial={{ scale: 0.8, rotate: -10, opacity: 0 }}
+            animate={{ scale: [0.8, 1.1, 1], rotate: [0, 10, -10, 0], opacity: 1 }}
+            transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
+          >
+            <Sparkles className="h-8 w-8 text-yellow-400 drop-shadow-lg" />
+          </motion.div>
+          <h2 className="text-2xl font-bold">Add Media to Your Exit Page</h2>
+        </div>
         <p className="text-gray-300">Enhance your message with GIFs, memes, and audio elements.</p>
       </div>
 
       <Tabs defaultValue="gifs" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-2 bg-white/10 rounded-lg mb-8">
-          <TabsTrigger value="gifs" className="data-[state=active]:bg-white/20">
-            GIFs & Memes
+          <TabsTrigger value="gifs" className="data-[state=active]:bg-white/20 flex items-center gap-2">
+            <ImageIcon className="h-5 w-5 text-yellow-400" /> GIFs & Memes
           </TabsTrigger>
-          <TabsTrigger value="audio" className="data-[state=active]:bg-white/20">
-            Audio & Sound
+          <TabsTrigger value="audio" className="data-[state=active]:bg-white/20 flex items-center gap-2">
+            <Music className="h-5 w-5 text-blue-400" /> Audio & Sound
           </TabsTrigger>
         </TabsList>
 
@@ -99,22 +110,28 @@ export default function MediaSelector({ gifs, audio, soundEffect, onUpdate }: Me
               <CardDescription>Find the perfect GIFs to express your feelings</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex mb-4">
-                <Input
-                  placeholder="Search GIFs..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-white/5 border-white/20 text-white"
-                />
-                <Button className="ml-2">
-                  <Search className="h-4 w-4" />
-                </Button>
+              <div className="flex mb-4 items-center">
+                <motion.div
+                  className="relative flex-1"
+                  initial={{ boxShadow: "0 0 0 0px #facc15" }}
+                  whileFocus={{ boxShadow: "0 0 0 3px #facc15" }}
+                >
+                  <Input
+                    placeholder="Search GIFs..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="bg-white/5 border-white/20 text-white pr-10"
+                  />
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-yellow-400 pointer-events-none" />
+                </motion.div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {mockGifs.map((gif, index) => (
-                  <div
+                  <motion.div
                     key={index}
+                    whileHover={{ scale: 1.05, boxShadow: "0 0 0 4px #facc15" }}
+                    whileTap={{ scale: 0.97 }}
                     className={`relative cursor-pointer rounded-md overflow-hidden border-2 ${
                       selectedGifs.includes(gif) ? "border-purple-500" : "border-transparent"
                     } hover:border-purple-500/50 transition-all`}
@@ -143,7 +160,7 @@ export default function MediaSelector({ gifs, audio, soundEffect, onUpdate }: Me
                         </svg>
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
