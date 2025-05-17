@@ -12,6 +12,8 @@ import { moods } from "@/lib/data"
 import { generateFarewellMessage } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import ApiStatusBadge from "./api-status-badge"
+import { motion } from "framer-motion"
+import { FileText, Heading as HeadingIcon, MessageCircle, Sparkles } from "lucide-react"
 
 interface MessageGeneratorProps {
   mood: string
@@ -216,17 +218,37 @@ END OF TRANSMISSION`
   }
   return (
     <div>
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-2">Craft Your Farewell Message</h2>
-        <p className="text-gray-300 flex items-center justify-center">
-          Our AI will generate a personalized message based on your mood and context. Feel free to edit it.
-          <ApiStatusBadge />
-        </p>
+      {/* Animated/illustrated header */}
+      <div className="flex flex-col items-center mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <motion.div
+            initial={{ scale: 0.8, rotate: -10, opacity: 0 }}
+            animate={{ scale: [0.8, 1.1, 1], rotate: [0, 10, -10, 0], opacity: 1 }}
+            transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
+          >
+            <Sparkles className="h-8 w-8 text-purple-400 drop-shadow-lg" />
+          </motion.div>
+          <h2 className="text-2xl font-bold">Craft Your Farewell Message</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <p className="text-gray-300">Our AI will generate a personalized message based on your mood and context. Feel free to edit it.</p>
+          <motion.span
+            initial={{ scale: 1 }}
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
+            className="ml-2"
+          >
+            <ApiStatusBadge />
+          </motion.span>
+        </div>
       </div>
 
       <Card className="bg-white/5 border-none mb-6">
         <CardHeader>
-          <CardTitle>Your Exit Page Title</CardTitle>
+          <div className="flex items-center gap-2 mb-1">
+            <HeadingIcon className="h-5 w-5 text-purple-400" />
+            <CardTitle>Your Exit Page Title</CardTitle>
+          </div>
           <CardDescription>This will be the headline of your departure page</CardDescription>
         </CardHeader>
         <CardContent>
@@ -242,34 +264,49 @@ END OF TRANSMISSION`
 
       <Card className="bg-white/5 border-none">
         <CardHeader>
-          <CardTitle>Your Farewell Message</CardTitle>
+          <div className="flex items-center gap-2 mb-1">
+            <MessageCircle className="h-5 w-5 text-purple-400" />
+            <CardTitle>Your Farewell Message</CardTitle>
+          </div>
           <CardDescription>Express your final thoughts and feelings</CardDescription>
         </CardHeader>
         <CardContent>
-          {isGenerating ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-500 mb-4" />
-              <p className="text-gray-300">Generating your personalized message...</p>
-            </div>
-          ) : (
-            <Textarea
-              placeholder="Your farewell message will appear here"
-              className="min-h-[300px] bg-white/5 border-white/20 text-white"
-              value={editedMessage}
-              onChange={handleMessageChange}
-            />
-          )}
+          <div className="relative">
+            {/* Subtle background effect */}
+            <motion.div
+              className="absolute inset-0 pointer-events-none z-0"
+              initial={{ opacity: 0.2 }}
+              animate={{ opacity: [0.2, 0.4, 0.2] }}
+              transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
+            >
+              <Sparkles className="absolute left-4 top-4 h-8 w-8 text-purple-400/30 animate-pulse-slow" />
+              <Sparkles className="absolute right-8 bottom-8 h-6 w-6 text-purple-400/20 animate-pulse-slow" />
+            </motion.div>
+            {isGenerating ? (
+              <div className="flex flex-col items-center justify-center py-12 relative z-10">
+                <RefreshCw className="h-8 w-8 animate-spin text-purple-400 mb-4" />
+                <p className="text-gray-400">Generating your message...</p>
+              </div>
+            ) : (
+              <Textarea
+                placeholder="Write your farewell message here..."
+                className="min-h-[200px] bg-white/5 border-white/20 text-white relative z-10"
+                value={editedMessage}
+                onChange={handleMessageChange}
+                disabled={isGenerating}
+              />
+            )}
+          </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Button
-            variant="outline"
-            onClick={handleRegenerate}
-            disabled={isGenerating || !mood || !relationship || !context}
-            className="border-white/20 text-white"
+          <motion.div
+            whileHover={{ scale: 1.07, rotate: -8 }}
+            whileTap={{ scale: 0.97, rotate: 0 }}
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Regenerate Message
-          </Button>
+            <Button variant="outline" onClick={handleRegenerate} disabled={isGenerating} className="border-purple-500 text-purple-300 hover:bg-purple-500/10 flex items-center gap-2">
+              <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} /> Regenerate Message
+            </Button>
+          </motion.div>
         </CardFooter>
       </Card>
     </div>

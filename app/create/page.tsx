@@ -11,13 +11,14 @@ import MediaSelector from "@/components/create/media-selector"
 import EffectsSelector from "@/components/create/effects-selector"
 import FinalPreview from "@/components/create/final-preview"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ArrowRight, Save } from "lucide-react"
+import { ArrowLeft, ArrowRight, Save, CheckCircle, Smile, Users, MessageCircle, Image, Sparkles, Eye } from "lucide-react"
 import { moods } from "@/lib/data"
-import ParticlesBackground from "@/components/effects/particles-background"
+import ConstellationBackground from "@/components/effects/constellation-background"
 import MoodTransition from "@/components/effects/mood-transition"
 import AudioPlayer from "@/components/ui/audio-player"
 import { getMusicForMood } from "@/lib/music"
 import { HeartfeltAnimation } from "@/components/effects/transitions/heart-effect"
+import React from "react"
 
 export default function CreatePage() {
   const router = useRouter()
@@ -145,27 +146,27 @@ export default function CreatePage() {
     setShowMoodTransition(false)
   }
 
-  
+  const stepIcons: Record<string, React.ReactNode> = {
+    mood: <Smile className="h-5 w-5" />,
+    context: <Users className="h-5 w-5" />,
+    message: <MessageCircle className="h-5 w-5" />,
+    media: <Image className="h-5 w-5" />,
+    effects: <Sparkles className="h-5 w-5" />,
+    preview: <Eye className="h-5 w-5" />,
+  }
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-1000 ${formData.mood === "heartfelt"
-          ? "bg-gradient-to-b from-pink-900/30 to-slate-900"
-          : formData.mood === "rage"
-            ? "bg-gradient-to-b from-red-900/30 to-slate-900"
-            : formData.mood === "funny"
-              ? "bg-gradient-to-b from-yellow-900/30 to-slate-900"
-              : formData.mood === "sad"
-                ? "bg-gradient-to-b from-blue-900/30 to-slate-900"
-                : formData.mood === "calm"
-                  ? "bg-gradient-to-b from-green-900/30 to-slate-900"
-                  : formData.mood === "robotic"
-                    ? "bg-gradient-to-b from-slate-800/30 to-slate-900"
-                    : "bg-gradient-to-b from-slate-900 to-slate-800"
-        } text-white relative overflow-hidden`}
+      className={`min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white relative overflow-hidden`}
     >
-      {/* Particles background */}
-      <ParticlesBackground mood={formData.mood || "default"} intensity="low" />
+      {/* Constellation background */}
+      <ConstellationBackground
+        dotColor="rgba(255, 255, 255, 0.6)"
+        lineColor="rgba(255, 255, 255, 0.1)"
+        dotCount={380}
+        className="z-0"
+        mood={formData.mood}
+      />
 
       {/* Mood transition effect */}
       <MoodTransition
@@ -187,66 +188,65 @@ export default function CreatePage() {
         className="fixed bottom-4 right-4 z-50"
       />
 
+      {/* Subtle mood color overlay */}
+      {formData.mood === "heartfelt" && (
+        <div className="fixed inset-0 z-10 pointer-events-none bg-gradient-to-br from-pink-500/20 to-purple-500/20 transition-all duration-700" />
+      )}
+      {formData.mood === "sad" && (
+        <div className="fixed inset-0 z-10 pointer-events-none bg-gradient-to-br from-blue-500/20 to-indigo-500/20 transition-all duration-700" />
+      )}
+      {formData.mood === "calm" && (
+        <div className="fixed inset-0 z-10 pointer-events-none bg-gradient-to-br from-green-400/20 to-teal-500/20 transition-all duration-700" />
+      )}
+      {formData.mood === "robotic" && (
+        <div className="fixed inset-0 z-10 pointer-events-none bg-gradient-to-br from-slate-400/20 to-slate-700/20 transition-all duration-700" />
+      )}
+      {formData.mood === "rage" && (
+        <div className="fixed inset-0 z-10 pointer-events-none bg-gradient-to-br from-red-600/20 to-orange-500/20 transition-all duration-700" />
+      )}
+      {formData.mood === "funny" && (
+        <div className="fixed inset-0 z-10 pointer-events-none bg-gradient-to-br from-yellow-400/20 to-orange-400/20 transition-all duration-700" />
+      )}
+
+      {/* Stepper/Progress Bar */}
       <div className="container mx-auto px-4 py-8 relative z-10">
-        <div className="flex justify-between items-center mb-8">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            <h1 className="text-lg font-bold">Create Your End Page</h1>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/")}
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
-          </motion.div>
-        </div>
-
         <div className="max-w-4xl mx-auto">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <TabsList className="grid grid-cols-3 md:grid-cols-6 bg-white/10 rounded-lg mb-8 backdrop-blur-sm">
-                {tabs.map((tab, index) => {
-                  const currentIndex = tabs.findIndex((t) => t.id === activeTab)
-
-                  // Disable future tabs unless current or before
-                  const isDisabled =
-                    index > currentIndex &&
-                    (
-                      (activeTab === "mood" && !formData.mood) ||
-                      (activeTab === "context" && (!formData.relationship || !formData.context)) ||
-                      (activeTab === "message" && !formData.message)
-                    )
-
+          <div className="relative px-4 pt-8 pb-2 z-20 max-w-4xl mx-auto">
+            <div className="mb-8">
+              <div className="flex w-full">
+                {tabs.map((tab, idx) => {
+                  const isActive = activeTab === tab.id
+                  const isCompleted = tabs.findIndex((t) => t.id === activeTab) > idx
                   return (
-                    <TabsTrigger
-                      key={tab.id}
-                      value={tab.id}
-                      disabled={isDisabled}
-                      className="data-[state=active]:bg-white/20 transition-all duration-300"
-                    >
-                      {tab.label}
-                    </TabsTrigger>
+                    <div key={tab.id} className="flex-1 flex flex-col items-center relative">
+                      <div className={`rounded-full flex items-center justify-center transition-all duration-300
+                        ${isActive ? "bg-purple-500 text-white shadow-lg scale-110" : isCompleted ? "bg-green-500 text-white" : "bg-white/10 text-gray-300"}
+                        h-10 w-10 mb-1 border-2 border-white/10`}
+                      >
+                        {isCompleted ? <CheckCircle className="h-5 w-5" /> : stepIcons[tab.id]}
+                      </div>
+                      <span className={`text-xs font-medium ${isActive ? "text-purple-300" : isCompleted ? "text-green-300" : "text-gray-400"}`}>{tab.label}</span>
+                      {idx < tabs.length - 1 && (
+                        <div className="absolute top-5 left-1/2 w-full h-1 -z-10">
+                          <div className={`h-1 w-full mx-auto rounded bg-gradient-to-r
+                            ${isCompleted ? "from-green-400 to-green-400" : isActive ? "from-purple-400 to-purple-400" : "from-white/10 to-white/10"}`}
+                          ></div>
+                        </div>
+                      )}
+                    </div>
                   )
                 })}
-
-              </TabsList>
-            </motion.div>
-
+              </div>
+            </div>
+          </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="bg-black/20 backdrop-blur-sm rounded-xl p-6 shadow-xl"
+              className="bg-black/20 backdrop-blur-sm rounded-xl p-6 shadow-xl relative"
             >
               <TabsContent value="mood" className="mt-0">
                 <MoodSelector selectedMood={formData.mood} onSelect={(mood) => updateFormData({ mood })} />
@@ -301,16 +301,24 @@ export default function CreatePage() {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="flex justify-between mt-8"
             >
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={activeTab === "mood"}
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Previous
-              </Button>
-
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={activeTab === "mood"}
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/")}
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  Back to Home
+                </Button>
+              </div>
               {activeTab === "preview" ? (
                 <Button
                   onClick={handlePublish}
