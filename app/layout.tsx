@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'TheEnd.page',
   description: 'Created by Codewars',
   generator: 'Codewars',
+  icons: {
+    icon: '/favicon.png', // Or .ico if you converted it
+  },
 }
 
 export default function RootLayout({
