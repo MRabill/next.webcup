@@ -14,7 +14,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="font-lexend">{children}</body>
     </html>
   )
 }
