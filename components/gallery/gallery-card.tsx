@@ -48,63 +48,47 @@ export default function GalleryCard({ page }: GalleryCardProps) {
   const getMoodGradient = (mood: string) => {
     switch (mood) {
       case "heartfelt":
-        return "from-pink-500/40 to-purple-500/40"
+        return "from-pink-500/10 to-purple-500/10"
       case "rage":
-        return "from-red-600/40 to-orange-500/40"
+        return "from-red-600/10 to-orange-500/10"
       case "funny":
-        return "from-yellow-400/30 to-orange-400/30"
+        return "from-yellow-400/10 to-orange-400/10"
       case "sad":
-        return "from-blue-500/40 to-indigo-500/40"
+        return "from-blue-500/10 to-indigo-500/10"
       case "calm":
-        return "from-green-400/40 to-teal-500/40"
+        return "from-green-400/10 to-teal-500/10"
       case "robotic":
-        return "from-slate-600/40 to-slate-700/40"
+        return "from-slate-600/10 to-slate-700/10"
       default:
-        return "from-pink-500/40 to-purple-500/40"
+        return "from-pink-500/10 to-purple-500/10"
     }
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col h-full"
-    >
-      <Card
-        className={`relative flex flex-col justify-between h-full bg-gradient-to-br ${getMoodGradient(
-          page.mood
-        )} border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group overflow-hidden`}
-      >
-        {/* Opacity Overlay */}
-        <div className="absolute inset-0 bg-black/30 z-0" />
-
-        <CardContent className="p-6 flex-grow flex flex-col relative z-10">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <Card className={`bg-gradient-to-br ${getMoodGradient(page.mood)} border-none hover:shadow-lg transition-shadow`}>
+        <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <Avatar className="h-8 w-8">
               <AvatarImage src={page.author.avatar || "/placeholder.svg"} />
               <AvatarFallback>{page.author.name[0]}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm md:text-base font-medium text-white">{page.author.name}</p>
-              <p className="text-xs text-gray-300">{page.date}</p>
+              <p className="text-sm font-medium">{page.author.name}</p>
+              <p className="text-xs text-gray-400">{page.date}</p>
             </div>
             <div className="ml-auto flex items-center gap-1">
               {getMoodIcon(page.mood)}
-              <span className="text-xs capitalize text-white">{page.mood}</span>
+              <span className="text-xs capitalize">{page.mood}</span>
             </div>
           </div>
 
-          <Link href={`/preview`} className="block group flex-grow">
-            <h3 className="text-lg md:text-xl font-bold mb-2 text-white group-hover:text-purple-400 transition-colors">
-              {page.title}
-            </h3>
-            <p className="text-sm md:text-base text-gray-200 line-clamp-3 mb-4">
-              {page.excerpt}
-            </p>
+          <Link href={`/preview`} className="block group">
+            <h3 className="text-xl font-bold mb-2 group-hover:text-purple-400 transition-colors">{page.title}</h3>
+            <p className="text-gray-300 text-sm line-clamp-3 mb-4">{page.excerpt}</p>
           </Link>
 
-          <div className="flex items-center text-xs md:text-sm text-gray-300 mt-auto">
+          <div className="flex items-center text-sm text-gray-400">
             <div className="flex items-center mr-4">
               <Eye className="h-4 w-4 mr-1" />
               {page.views}
@@ -119,13 +103,9 @@ export default function GalleryCard({ page }: GalleryCardProps) {
             </div>
           </div>
         </CardContent>
-
-        <CardFooter className="px-6 pb-6 pt-0 relative z-10">
+        <CardFooter className="px-6 pb-6 pt-0">
           <Link href={`/preview`} className="w-full">
-            <Button
-              variant="outline"
-              className="w-full border-white/20 text-white hover:border-purple-400 hover:text-purple-400 transition"
-            >
+            <Button variant="outline" className="w-full border-white/20 text-white">
               View Exit Page
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
