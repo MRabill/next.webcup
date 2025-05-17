@@ -5,11 +5,12 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
-import { Search, Eye, Heart } from "lucide-react"
+import { Search, Eye, Heart, Sparkles, ArrowRight } from "lucide-react"
 import ConstellationBackground from "@/components/effects/constellation-background"
 import { ThemeToggle } from "@/components/theme-toggle"
 import GalleryCard from "@/components/gallery/gallery-card"
 import EnhancedParticles from "@/components/effects/enhanced-particles"
+import { CardFooter } from "@/components/ui/card"
 
 export default function GalleryPage() {
   const [activeTab, setActiveTab] = useState("trending")
@@ -177,7 +178,7 @@ export default function GalleryPage() {
     }
     return 0
   })
-  
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white relative">
@@ -189,7 +190,7 @@ export default function GalleryPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div className="flex items-center justify-between w-full md:w-auto">
             <div>
-              <h1 className="text-3xl font-bold">Exit Page Gallery</h1>
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">Exit Page Gallery</h1>
               <p className="text-slate-600 dark:text-gray-300">Browse memorable departures from the community</p>
             </div>
             <div className="md:hidden">
@@ -197,102 +198,115 @@ export default function GalleryPage() {
             </div>
           </div>
           <div className="flex gap-4 items-center w-full md:w-auto">
-            <div className="relative flex-1 md:flex-none">
+            <Link href="/create">
+              <Button
+                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
+                size="lg"
+              >
+                Create Your Exit
+              </Button>
+            </Link>
+          </div>
+        </div>
+       <section className="mb-12 px-4">
+  <h2 className="mb-6 text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
+    Hall of Fame 🏆
+  </h2>
+
+  <div className="flex flex-col sm:flex-row justify-center items-center sm:items-end gap-8 sm:gap-4 max-w-5xl mx-auto">
+    {[
+      {
+        rank: "#2",
+        title: "So Long, and Thanks...",
+        name: "Jamie Smith",
+        bg: "#C0C0C0",
+        height: "h-44",
+      },
+      {
+        rank: "#1",
+        title: "My Dramatic Exit...",
+        name: "Alex Johnson",
+        bg: "#FFD700",
+        height: "h-52",
+      },
+      {
+        rank: "#3",
+        title: "With a Heavy Heart...",
+        name: "Taylor Wilson",
+        bg: "#CD7F32",
+        height: "h-40",
+      },
+    ].map(({ rank, title, name, bg, height }, idx) => (
+      <div key={idx} className="flex flex-col items-center relative w-full max-w-[540px] sm:max-w-[260px] md:max-w-[280px]">
+ 
+        {/* Glow Effect */}
+        <div
+          className={`absolute -z-10 w-full ${height} rounded-xl`}
+          style={{
+            backgroundColor: `${bg}80`,
+            filter: "blur(40px)",
+            opacity: 0.3,
+          }}
+        />
+
+        <span className="mb-2 font-bold text-white">{rank}</span>
+        <div
+          className={`rounded-xl shadow-md p-4 w-full ${height} text-white text-left flex flex-col justify-between`}
+          style={{
+            backgroundColor: `${bg}4D`,
+            border: `1px solid ${bg}66`,
+            backdropFilter: "blur(8px) saturate(150%)",
+          }}
+        >
+          <div>
+            <h3 className="font-bold truncate">{title}</h3>
+            <p className="text-sm mt-2">{name}</p>
+          </div>
+          <div className="mt-3 flex justify-center">
+            <Link href={`/preview`} className="w-full">
+              <Button variant="outline" className="w-full border-white/20 text-white hover:border-purple-400 hover:text-purple-400 transition">
+                View Exit Page
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+
+
+        <Tabs defaultValue="trending" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+            {/* Tabs */}
+            <TabsList className="grid grid-cols-2 bg-white/20 dark:bg-white/10 rounded-lg w-full md:w-[300px]">
+              <TabsTrigger
+                value="trending"
+                className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20"
+              >
+                Trending
+              </TabsTrigger>
+              <TabsTrigger
+                value="recent"
+                className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20"
+              >
+                Recent
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Search */}
+            <div className="relative w-full md:w-[250px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search exit pages..."
-                className="pl-10 bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-white/20 text-slate-900 dark:text-white w-full md:w-[250px]"
+                className="pl-10 bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-white/20 text-slate-900 dark:text-white w-full"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="hidden md:block">
-              <ThemeToggle />
-            </div>
-            <Link href="/create">
-              <Button>Create Your Exit</Button>
-            </Link>
           </div>
-        </div>
-        {/* Hall of Fame Section */}
-        <section className="relative z-10 px-4 md:px-8 py-10 bg-gradient-to-r from-purple-600/10 to-pink-500/10 dark:from-purple-700/20 dark:to-pink-600/20 backdrop-blur-md border-b border-white/10 mb-5  rounded-2xl">
-          <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
-              Hall of Fame 🏆
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {exitPages
-                .sort((a, b) => b.likes - a.likes)
-                .slice(0, 3)
-                .map((page, index) => {
-                  const baseColors = [
-                    "from-yellow-400 to-yellow-600", // Gold
-                    "from-gray-300 to-gray-500",     // Silver
-                    "from-amber-600 to-orange-700",  // Bronze
-                  ]
-                  return (
-                    <div
-                      key={page.id}
-                      className={`relative p-6 rounded-xl shadow-lg backdrop-blur-md border border-white/10 bg-gradient-to-br ${baseColors[index]}`}
-                    >
-                      <span className="absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full bg-black/40 text-white shadow-md">
-                        #{index + 1}
-                      </span>
-                      <h3 className="text-lg font-semibold mb-2 text-white truncate">
-                        {page.title}
-                      </h3>
-                      <p className="text-sm text-white/90 line-clamp-3 mb-4">{page.excerpt}</p>
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={page.author.avatar}
-                          alt={page.author.name}
-                          className="h-10 w-10 rounded-full border border-white/20"
-                        />
-                        <div>
-                          <p className="text-sm font-medium text-white">{page.author.name}</p>
-                          <p className="text-xs text-white/70">{page.date}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4 text-xs text-white/80 mt-4">
-                        <span className="flex items-center gap-1">
-                          <Eye className="w-4 h-4" /> {page.views}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Heart className="w-4 h-4" /> {page.likes}
-                        </span>
-                        <span className="capitalize px-2 py-0.5 rounded bg-black/20 border border-white/20">
-                          {page.mood}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
-
-            </div>
-          </div>
-        </section>
-
-        <Tabs defaultValue="trending" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 bg-white/20 dark:bg-white/10 rounded-lg mb-8 w-full md:w-[300px]">
-            <TabsTrigger
-              value="trending"
-              className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20"
-            >
-              Trending
-            </TabsTrigger>
-            <TabsTrigger
-              value="recent"
-              className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20"
-            >
-              Recent
-            </TabsTrigger>
-            <TabsTrigger
-              value="popular"
-              className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20"
-            >
-              Popular
-            </TabsTrigger>
-          </TabsList>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedPages.length > 0 ? (

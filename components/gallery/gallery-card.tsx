@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,6 +58,8 @@ interface GalleryCardProps {
 export default function GalleryCard({ page }: GalleryCardProps) {
   const [reactions, setReactions] = useState(page.reactions)
   const [activeAnimation, setActiveAnimation] = useState<keyof typeof emojiAnimations | null>(null)
+  const [showReactions, setShowReactions] = useState(false)
+  const reactionTimeout = useRef<NodeJS.Timeout | null>(null)
 
   const handleReact = (type: keyof typeof emojiAnimations) => {
     setReactions((prev) => ({
@@ -165,14 +167,27 @@ export default function GalleryCard({ page }: GalleryCardProps) {
             </div>
             <div className="relative mr-4">
               <div className="flex items-center text-white/80 transition">
-                <div className="group relative">
+                <div
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (reactionTimeout.current) clearTimeout(reactionTimeout.current)
+                    setShowReactions(true)
+                  }}
+                  onMouseLeave={() => {
+                    reactionTimeout.current = setTimeout(() => {
+                      setShowReactions(false)
+                    }, 300) // 1 second delay
+                  }}
+                >
                   <Heart className="h-4 w-4 mr-1 cursor-pointer hover:scale-110 transition-transform" />
 
-
-                  <div className="absolute bottom-full left-0 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto pointer-events-none transition-all duration-200 bg-black/80 px-3 py-2 rounded-xl shadow-lg z-20">
-                    <ReactionBar onReact={handleReact} reactions={reactions} />
-                  </div>
+                  {showReactions && (
+                    <div className="absolute bottom-full left-0 mb-2 bg-black/80 px-3 py-2 rounded-xl shadow-lg z-20">
+                      <ReactionBar onReact={handleReact} reactions={reactions} />
+                    </div>
+                  )}
                 </div>
+
                 <span>{reactions.like}</span>
               </div>
             </div>
