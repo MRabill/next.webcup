@@ -265,7 +265,7 @@ export default function ShatterEffect() {
     const height = window.innerHeight
     // Staggered shatters with shake and sound
     const shatterPoints = [
-      { x: width - 100, y: 100 }, // top right
+      { x: width - 170, y: 130 }, // top right
       { x: 100, y: height - 100 }, // bottom left
       { x: 100, y: 100 }, // top left
       { x: width - 100, y: height - 100 }, // bottom right
