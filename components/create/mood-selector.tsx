@@ -14,8 +14,8 @@ export default function MoodSelector({ selectedMood, onSelect }: MoodSelectorPro
   return (
     <div>
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold mb-2">Choose Your Exit Mood</h2>
-        <p className="text-gray-300">
+        <h2 className="text-xl font-bold mb-2">Choose Your Exit Mood</h2>
+        <p className="text-gray-300 text-sm">
           Select the emotional tone for your departure. This will influence the style, effects, and AI-generated
           content.
         </p>

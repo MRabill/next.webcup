@@ -21,9 +21,21 @@ import { getMusicForMood } from "@/lib/music"
 export default function CreatePage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("mood")
-  const [previousMood, setPreviousMood] = useState<string | null>(null)
+  const [previousMood, setPreviousMood] = useState<string | undefined>(undefined)
   const [showMoodTransition, setShowMoodTransition] = useState(false)
-  const [formData, setFormData] = useState({
+  type FormData = {
+    mood: string
+    relationship: string
+    context: string
+    message: string
+    gifs: string[]
+    audio: string | null
+    soundEffect: string | null
+    visualEffects: string[]
+    title: string
+  }
+
+  const [formData, setFormData] = useState<FormData>({
     mood: "",
     relationship: "",
     context: "",
@@ -95,10 +107,11 @@ export default function CreatePage() {
     setShowMoodTransition(false)
   }
 
+  
+
   return (
     <div
-      className={`min-h-screen transition-colors duration-1000 ${
-        formData.mood === "heartfelt"
+      className={`min-h-screen transition-colors duration-1000 ${formData.mood === "heartfelt"
           ? "bg-gradient-to-b from-pink-900/30 to-slate-900"
           : formData.mood === "rage"
             ? "bg-gradient-to-b from-red-900/30 to-slate-900"
@@ -111,7 +124,7 @@ export default function CreatePage() {
                   : formData.mood === "robotic"
                     ? "bg-gradient-to-b from-slate-800/30 to-slate-900"
                     : "bg-gradient-to-b from-slate-900 to-slate-800"
-      } text-white relative overflow-hidden`}
+        } text-white relative overflow-hidden`}
     >
       {/* Particles background */}
       <ParticlesBackground mood={formData.mood || "default"} intensity="low" />
@@ -136,7 +149,7 @@ export default function CreatePage() {
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex justify-between items-center mb-8">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            <h1 className="text-3xl font-bold">Create Your End Page</h1>
+            <h1 className="text-lg font-bold">Create Your End Page</h1>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
@@ -159,16 +172,30 @@ export default function CreatePage() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <TabsList className="grid grid-cols-3 md:grid-cols-6 bg-white/10 rounded-lg mb-8 backdrop-blur-sm">
-                {tabs.map((tab) => (
-                  <TabsTrigger
-                    key={tab.id}
-                    value={tab.id}
-                    disabled={tab.id === "preview" && !formData.message}
-                    className="data-[state=active]:bg-white/20 transition-all duration-300"
-                  >
-                    {tab.label}
-                  </TabsTrigger>
-                ))}
+                {tabs.map((tab, index) => {
+                  const currentIndex = tabs.findIndex((t) => t.id === activeTab)
+
+                  // Disable future tabs unless current or before
+                  const isDisabled =
+                    index > currentIndex &&
+                    (
+                      (activeTab === "mood" && !formData.mood) ||
+                      (activeTab === "context" && (!formData.relationship || !formData.context)) ||
+                      (activeTab === "message" && !formData.message)
+                    )
+
+                  return (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      disabled={isDisabled}
+                      className="data-[state=active]:bg-white/20 transition-all duration-300"
+                    >
+                      {tab.label}
+                    </TabsTrigger>
+                  )
+                })}
+
               </TabsList>
             </motion.div>
 
