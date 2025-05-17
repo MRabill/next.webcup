@@ -4,15 +4,106 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { AnimatePresence, motion } from "framer-motion"
-import { Sparkles, Flame, Heart, Frown, Cloud, Bot, Laugh, ArrowRight } from "lucide-react"
+import { Sparkles, Flame, Heart, Frown, Cloud, Bot, Laugh, ArrowRight, PartyPopper } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FeatureCard } from "@/components/feature-card"
 import { BackgroundAnimation } from "@/components/background-animation"
+
+// Typing effect hook (returns [displayed, done])
+function useTypingEffect(text: string, speed: number, resetKey: any) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    if (!text) return;
+    let i = 0;
+    function typeNext() {
+      setDisplayed(text.slice(0, i + 1));
+      if (i < text.length - 1) {
+        i++;
+        setTimeout(typeNext, speed);
+      } else {
+        setDone(true);
+      }
+    }
+    typeNext();
+    // Clean up: if resetKey changes, stop typing
+    return () => setDone(true);
+  }, [text, speed, resetKey]);
+  return [displayed, done] as const;
+}
 
 export default function LandingPage() {
   const router = useRouter()
   const [activeFeature, setActiveFeature] = useState<number | null>(null)
   const [isExiting, setIsExiting] = useState(false)
+
+  // Easter Egg state
+  const [easterEgg, setEasterEgg] = useState(false);
+  const keyBuffer = useRef<string>("");
+
+  // Listen for 'wow' key sequence
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      keyBuffer.current += e.key.toLowerCase();
+      if (keyBuffer.current.length > 10) keyBuffer.current = keyBuffer.current.slice(-10);
+      if (keyBuffer.current.includes("wow")) {
+        setEasterEgg(true);
+        keyBuffer.current = "";
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
+  // Hide easter egg after a while
+  useEffect(() => {
+    if (!easterEgg) return;
+    const timeout = setTimeout(() => setEasterEgg(false), 3500);
+    return () => clearTimeout(timeout);
+  }, [easterEgg]);
+
+  // Quote carousel state
+  const quotes = [
+    {
+      title: "Your Grand Exit, Your Way",
+      subtitle: "Create unforgettable goodbye messages with stunning animations and effects",
+    },
+    {
+      title: "Leave a Lasting Impression",
+      subtitle: "Say goodbye in style with personalized animations and heartfelt messages.",
+    },
+    {
+      title: "Make Every Farewell Memorable",
+      subtitle: "Transform your exit into a celebration with unique effects and visuals.",
+    },
+    {
+      title: "Goodbyes, Reimagined",
+      subtitle: "Express your emotions with creative, interactive exit pages.",
+    },
+    {
+      title: "Parting is Such Sweet Sorrow",
+      subtitle: "Turn every goodbye into a beautiful memory with our animated farewells.",
+    },
+  ];
+  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [quoteDirection, setQuoteDirection] = useState(1);
+
+  // Typing effect for title only
+  const [typedTitle, titleDone] = useTypingEffect(quotes[quoteIndex].title, 120, quoteIndex);
+  const typedSubtitle = quotes[quoteIndex].subtitle;
+  const subtitleDone = true;
+
+  // Control quote change only after typing is done
+  useEffect(() => {
+    if (!titleDone) return;
+    const timeout = setTimeout(() => {
+      setQuoteDirection(1);
+      setQuoteIndex((prev) => (prev + 1) % quotes.length);
+    }, 1500); // Pause after typing before next quote
+    return () => clearTimeout(timeout);
+  }, [titleDone, quotes.length]);
 
   // Create four featured cards for the corners
   const features = [
@@ -168,6 +259,38 @@ export default function LandingPage() {
       >
         <BackgroundAnimation />
 
+        {/* Easter Egg Hidden Spot */}
+        <button
+          aria-label="Easter Egg"
+          className="fixed bottom-2 left-2 w-4 h-4 opacity-0 z-50"
+          tabIndex={-1}
+          onClick={() => setEasterEgg(true)}
+        />
+
+        {/* Easter Egg Animation/Message */}
+        <AnimatePresence>
+          {easterEgg && (
+            <motion.div
+              className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ type: "spring", stiffness: 200, damping: 18 }}
+            >
+              <motion.div
+                className="bg-gradient-to-br from-pink-500 to-yellow-400 rounded-2xl shadow-2xl px-12 py-10 flex flex-col items-center"
+                initial={{ rotate: -10 }}
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ repeat: 2, duration: 1.2 }}
+              >
+                <PartyPopper className="w-16 h-16 mb-4 text-white drop-shadow-lg animate-bounce" />
+                <h3 className="text-3xl font-extrabold mb-2 text-white drop-shadow">WOW! 🎉</h3>
+                <p className="text-lg text-white/90">You found the secret! Enjoy this little celebration. 🥳</p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Header */}
         <header className="absolute top-0 left-0 right-0 z-10 p-6 flex justify-between items-center">
           <div className="flex items-center">
@@ -185,7 +308,7 @@ export default function LandingPage() {
           </Button>
         </header>
 
-        {/* Center Quote */}
+        {/* Center Quote - Animated Carousel */}
         <motion.div
           className="absolute inset-0 flex items-center justify-center z-10"
           initial={{ opacity: 0, y: 20 }}
@@ -193,12 +316,22 @@ export default function LandingPage() {
           transition={{ delay: 0.3, duration: 0.8 }}
         >
           <div className="text-center max-w-3xl px-6">
-            <h2 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">
-              Your Grand Exit, Your Way
-            </h2>
-            <p className="text-xl md:text-2xl text-slate-300 mb-8">
-              Create unforgettable goodbye messages with stunning animations and effects
-            </p>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={quoteIndex}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+              >
+                <h2 className="text-5xl md:text-7xl font-extrabold mb-2 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300 min-h-[2.7em]">
+                  {typedTitle}
+                </h2>
+                <p className="text-xl md:text-2xl text-slate-300 mb-6 min-h-[2.2em] mt-1">
+                  {typedSubtitle}
+                </p>
+              </motion.div>
+            </AnimatePresence>
             <Button
               onClick={handleExitClick}
               size="lg"
