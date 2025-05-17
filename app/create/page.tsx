@@ -87,11 +87,13 @@ export default function CreatePage() {
       setActiveTab(tabs[currentIndex - 1].id)
     }
   }
-
   const handlePublish = () => {
-    // In a real app, this would save the data to a database
-    // For now, we'll just navigate to a preview page
-    router.push("/preview")
+    // Save the form data to localStorage before navigating
+    import('@/lib/exit-page-store').then(({ saveExitPageData }) => {
+      saveExitPageData(formData);
+      // Navigate to the preview page
+      router.push("/preview");
+    });
   }
 
   const updateFormData = (data: Partial<typeof formData>) => {
