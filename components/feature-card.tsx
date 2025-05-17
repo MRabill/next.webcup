@@ -83,10 +83,10 @@ export function FeatureCard({
           "transform-gpu overflow-visible",
           color,
           "w-full max-w-[300px] md:w-96 p-4 relative", 
-          "shadow-[0_0_15px_rgba(255,255,255,0.2)]",
+          "shadow-[0_0_10px_rgba(245,245,245,0.2)]",
           "flex items-stretch",
           "min-h-[120px] md:min-h-[140px]",
-          isActive && "shadow-[0_0_25px_rgba(255,255,255,0.4)]"
+          isActive && "shadow-[0_0_10px_rgba(245,245,245,0.4)]"
         )}
         animate={{
           rotate: initialRotation,
