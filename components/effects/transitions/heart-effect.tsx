@@ -1,139 +1,164 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useState, useRef } from "react"
 
-export default function HeartEffect() {
+interface HeartfeltAnimationProps {
+  isActive: boolean
+  onComplete?: () => void
+}
+
+export function HeartfeltAnimation({ isActive, onComplete }: HeartfeltAnimationProps) {
+  const [showHearts, setShowHearts] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const animationRef = useRef<number | null>(null)
+
+  // Hearts
+  const heartsRef = useRef<
+    Array<{
+      x: number
+      y: number
+      size: number
+      color: string
+      velocity: { x: number; y: number }
+      rotation: number
+      rotationSpeed: number
+    }>
+  >([])
+
+  // Colors for hearts
+  const colors = ["#FF577F", "#FF84B7", "#FFA6C1", "#FFCCD5", "#FF4D6D", "#FF758F", "#FF8FA3", "#FFB3C1"]
 
   useEffect(() => {
+    if (isActive) {
+      setShowHearts(true)
+
+      // Play heartfelt music
+      if (audioRef.current) {
+        audioRef.current.volume = 0.4
+        audioRef.current.play().catch((e) => console.error("Audio play failed:", e))
+      }
+
+      // Initialize hearts animation
+      const canvas = canvasRef.current
+      if (canvas) {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+
+        // Create hearts
+        heartsRef.current = Array.from({ length: 50 }, () => ({
+          x: Math.random() * canvas.width,
+          y: canvas.height + Math.random() * 100,
+          size: Math.random() * 20 + 10,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          velocity: {
+            x: (Math.random() - 0.5) * 2,
+            y: -Math.random() * 3 - 1, // Upward
+          },
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 2,
+        }))
+
+        // Start animation
+        animateHearts()
+      }
+
+      // Clean up after a while
+      const timeout = setTimeout(() => {
+        setShowHearts(false)
+        if (onComplete) onComplete()
+      }, 8000)
+
+      return () => {
+        clearTimeout(timeout)
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current)
+        }
+        if (audioRef.current) {
+          audioRef.current.pause()
+          audioRef.current.currentTime = 0
+        }
+      }
+    } else {
+      setShowHearts(false)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [isActive, onComplete])
+
+  const animateHearts = () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // Set canvas dimensions
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Create hearts
-    const heartCount = 100
-    const hearts: any[] = []
+    // Update and draw hearts
+    heartsRef.current.forEach((heart, index) => {
+      // Update position
+      heart.x += heart.velocity.x
+      heart.y += heart.velocity.y
 
-    // Heart drawing function
-    const drawHeart = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, color: string) => {
+      // Add some wobble
+      heart.x += Math.sin(Date.now() / 1000 + index) * 0.5
+
+      // Update rotation
+      heart.rotation += heart.rotationSpeed
+
+      // Draw heart
       ctx.save()
+      ctx.translate(heart.x, heart.y)
+      ctx.rotate((heart.rotation * Math.PI) / 180)
+      ctx.fillStyle = heart.color
+
+      // Draw heart shape
       ctx.beginPath()
-      ctx.translate(x, y)
-      ctx.scale(size, size)
-
-      // Heart shape
-      ctx.moveTo(0, 0)
-      ctx.bezierCurveTo(-0.5, -0.3, -1, 0.1, -0.5, 0.5)
-      ctx.bezierCurveTo(-0.1, 0.8, 0, 1, 0, 1)
-      ctx.bezierCurveTo(0, 1, 0.1, 0.8, 0.5, 0.5)
-      ctx.bezierCurveTo(1, 0.1, 0.5, -0.3, 0, 0)
-
-      ctx.fillStyle = color
+      const topCurveHeight = heart.size * 0.3
+      ctx.moveTo(0, heart.size * 0.2)
+      // Left curve
+      ctx.bezierCurveTo(-heart.size / 2, -topCurveHeight, -heart.size, heart.size / 3, 0, heart.size)
+      // Right curve
+      ctx.bezierCurveTo(heart.size, heart.size / 3, heart.size / 2, -topCurveHeight, 0, heart.size * 0.2)
+      ctx.closePath()
       ctx.fill()
+
       ctx.restore()
-    }
 
-    // Create heart particles
-    for (let i = 0; i < heartCount; i++) {
-      const size = Math.random() * 20 + 10
-      hearts.push({
-        x: Math.random() * canvas.width,
-        y: canvas.height + size,
-        size: size,
-        color: `rgba(${Math.floor(Math.random() * 55 + 200)}, ${Math.floor(Math.random() * 50)}, ${Math.floor(Math.random() * 100)}, ${Math.random() * 0.5 + 0.5})`,
-        velocity: {
-          x: Math.random() * 2 - 1,
-          y: -Math.random() * 3 - 2,
-        },
-        rotation: Math.random() * 360,
-        rotationSpeed: Math.random() * 2 - 1,
-        opacity: Math.random() * 0.5 + 0.5,
-        scale: 0,
-      })
-    }
-
-    // Play sound effect
-    const audio = new Audio("/sounds/heart-beat.mp3")
-    audio.volume = 0.3
-    audio.play().catch((err) => console.error("Failed to play sound:", err))
-
-    // Animation loop
-    let animationFrame: number
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      // Add pink overlay
-      ctx.fillStyle = "rgba(236, 72, 153, 0.05)"
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-      for (let i = 0; i < hearts.length; i++) {
-        const heart = hearts[i]
-
-        // Update heart position
-        heart.x += heart.velocity.x
-        heart.y += heart.velocity.y
-        heart.rotation += heart.rotationSpeed
-
-        // Grow hearts
-        if (heart.scale < 1) {
-          heart.scale += 0.02
-        }
-
-        // Add floating effect
-        heart.velocity.x += Math.random() * 0.2 - 0.1
-        heart.velocity.y += 0.01 // slight gravity
-
-        // Fade out when reaching top
-        if (heart.y < canvas.height * 0.2) {
-          heart.opacity -= 0.01
-        }
-
-        // Draw heart
-        ctx.save()
-        ctx.globalAlpha = heart.opacity * heart.scale
-        ctx.translate(heart.x, heart.y)
-        ctx.rotate((heart.rotation * Math.PI) / 180)
-        drawHeart(ctx, 0, 0, heart.size * 0.05 * heart.scale, heart.color)
-        ctx.restore()
-
-        // Reset heart when it fades out
-        if (heart.opacity <= 0 || heart.y < -50) {
-          heart.y = canvas.height + heart.size
-          heart.x = Math.random() * canvas.width
-          heart.opacity = Math.random() * 0.5 + 0.5
-          heart.scale = 0
+      // Reset hearts that are off screen
+      if (heart.y < -heart.size) {
+        heartsRef.current[index] = {
+          ...heart,
+          y: canvas.height + heart.size,
+          x: Math.random() * canvas.width,
         }
       }
+    })
 
-      animationFrame = requestAnimationFrame(animate)
-    }
+    // Continue animation
+    animationRef.current = requestAnimationFrame(animateHearts)
+  }
 
-    animate()
-
-    return () => {
-      cancelAnimationFrame(animationFrame)
-      audio.pause()
-      audio.src = ""
-    }
-  }, [])
+  if (!isActive && !showHearts) {
+    return null
+  }
 
   return (
-    <motion.div
-      className="fixed inset-0 z-50 pointer-events-none"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <canvas ref={canvasRef} className="w-full h-full" />
-    </motion.div>
+    <>
+      <audio ref={audioRef} src="/heartfelt-music.mp3" />
+
+      <div className="fixed inset-0 pointer-events-none z-50">
+        {/* Soft glow overlay */}
+        <div className="absolute inset-0 bg-pink-500/5 animate-pulse-slow" />
+
+        {/* Hearts canvas */}
+        <canvas ref={canvasRef} className="w-full h-full" />
+      </div>
+    </>
   )
 }
+
+export default HeartfeltAnimation

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import ConfettiEffect from "./transitions/confetti-effect"
+import { FunnyAnimation } from "./transitions/confetti-effect"
 import RainEffect from "./transitions/rain-effect"
 import HeartEffect from "./transitions/heart-effect"
-import ShatterEffect from "./transitions/shatter-effect"
 import GlitchEffect from "./transitions/glitch-effect"
 import ZenEffect from "./transitions/zen-effect"
+import ShatterEffect from "./transitions/shatter-effect"
 
 interface MoodTransitionProps {
   mood: string
@@ -29,7 +29,7 @@ export default function MoodTransition({ mood, previousMood, isActive, onComplet
       const timer = setTimeout(() => {
         setShowEffect(false)
         if (onComplete) onComplete()
-      }, 3000)
+      }, 5000)
 
       return () => clearTimeout(timer)
     }
@@ -46,12 +46,12 @@ export default function MoodTransition({ mood, previousMood, isActive, onComplet
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {currentEffect === "funny" && <ConfettiEffect />}
+        {currentEffect === "funny" && <FunnyAnimation isActive={true} />}
         {currentEffect === "sad" && <RainEffect />}
-        {currentEffect === "heartfelt" && <HeartEffect />}
-        {currentEffect === "rage" && <ShatterEffect />}
+        {currentEffect === "heartfelt" && <HeartEffect isActive={true} />}
         {currentEffect === "robotic" && <GlitchEffect />}
         {currentEffect === "calm" && <ZenEffect />}
+        {currentEffect === "rage" && <ShatterEffect />}
       </motion.div>
     </AnimatePresence>
   )

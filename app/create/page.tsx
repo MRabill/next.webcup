@@ -17,6 +17,7 @@ import ParticlesBackground from "@/components/effects/particles-background"
 import MoodTransition from "@/components/effects/mood-transition"
 import AudioPlayer from "@/components/ui/audio-player"
 import { getMusicForMood } from "@/lib/music"
+import { HeartfeltAnimation } from "@/components/effects/transitions/heart-effect"
 
 export default function CreatePage() {
   const router = useRouter()
@@ -136,6 +137,9 @@ export default function CreatePage() {
         isActive={showMoodTransition}
         onComplete={handleTransitionComplete}
       />
+
+      {/* Heartfelt Animation (only on heartfelt mood and mood tab) */}
+      <HeartfeltAnimation isActive={formData.mood === "heartfelt" && activeTab === "mood"} />
 
       {/* Background music */}
       <AudioPlayer

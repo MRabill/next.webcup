@@ -27,16 +27,16 @@ export default function RainEffect() {
         y: Math.random() * canvas.height - canvas.height,
         length: Math.random() * 20 + 10,
         velocity: Math.random() * 10 + 15,
-        thickness: Math.random() * 2 + 1,
+        thickness: Math.random() * 4 + 1,
         color: `rgba(120, 160, 255, ${Math.random() * 0.3 + 0.2})`,
         splashed: false,
-        splashSize: 0,
+        splashSize: 1,
         splashOpacity: 1,
       })
     }
 
     // Play sound effect
-    const audio = new Audio("/sounds/rain-ambient.mp3")
+    const audio = new Audio("/sounds/emotional.mp3")
     audio.volume = 0.2
     audio.loop = true
     audio.play().catch((err) => console.error("Failed to play sound:", err))

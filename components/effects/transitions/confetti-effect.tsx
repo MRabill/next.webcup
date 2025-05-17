@@ -1,143 +1,201 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useState, useRef } from "react"
 
-export default function ConfettiEffect() {
+interface FunnyAnimationProps {
+  isActive: boolean
+  onComplete?: () => void
+}
+
+export function FunnyAnimation({ isActive, onComplete }: FunnyAnimationProps) {
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [emojis, setEmojis] = useState<Array<{ emoji: string; style: React.CSSProperties }>>([])
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const animationRef = useRef<number | null>(null)
+
+  // Confetti particles
+  const particlesRef = useRef<
+    Array<{
+      x: number
+      y: number
+      size: number
+      color: string
+      velocity: { x: number; y: number }
+      rotation: number
+      rotationSpeed: number
+    }>
+  >([])
+
+  // Colors for confetti
+  const colors = ["#FF577F", "#FF884B", "#FFBD9B", "#F9F871", "#7ED7C1", "#DC84F3", "#BFEA7C", "#FFCF96"]
+  const emojiList = ["😂", "🎉", "🎊", "👋", "😁", "🤣", "👍"]
+
+  // Initialize emojis
+  useEffect(() => {
+    if (isActive) {
+      const newEmojis = Array.from({ length: 10 }, () => ({
+        emoji: emojiList[Math.floor(Math.random() * emojiList.length)],
+        style: {
+          top: `${Math.random() * 100}%`,
+          left: `${Math.random() * 100}%`,
+          fontSize: `${Math.random() * 2 + 1}rem`,
+          animationDelay: `${Math.random() * 2}s`,
+          animationDuration: `${3 + Math.random() * 5}s`,
+        },
+      }))
+      setEmojis(newEmojis)
+    }
+  }, [isActive])
 
   useEffect(() => {
+    if (isActive) {
+      setShowConfetti(true)
+
+      // Play confetti pop sound
+      if (audioRef.current) {
+        audioRef.current.volume = 0.5
+        audioRef.current.play().catch((e) => {
+          console.error("Audio play failed:", e)
+          // Continue with animation even if audio fails
+        })
+      }
+
+      // Initialize confetti particles
+      const canvas = canvasRef.current
+      if (canvas) {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+
+        // Create particles
+        particlesRef.current = Array.from({ length: 200 }, () => ({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          size: Math.random() * 10 + 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          velocity: {
+            x: (Math.random() - 0.5) * 15,
+            y: (Math.random() - 0.5) * 15 - 3, // Mostly upward
+          },
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 5,
+        }))
+
+        // Start animation
+        animateConfetti()
+      }
+
+      // Clean up after a while
+      const timeout = setTimeout(() => {
+        setShowConfetti(false)
+        if (onComplete) onComplete()
+      }, 5000)
+
+      return () => {
+        clearTimeout(timeout)
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current)
+        }
+        if (audioRef.current) {
+          audioRef.current.pause()
+          audioRef.current.currentTime = 0
+        }
+      }
+    } else {
+      setShowConfetti(false)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [isActive, onComplete])
+
+  const animateConfetti = () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // Set canvas dimensions
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Create confetti particles
-    const confettiCount = 200
-    const confetti: any[] = []
+    // Update and draw particles
+    particlesRef.current.forEach((particle, index) => {
+      // Apply gravity
+      particle.velocity.y += 0.1
 
-    const colors = [
-      "#facc15", // yellow
-      "#fb923c", // orange
-      "#f87171", // red
-      "#4ade80", // green
-      "#60a5fa", // blue
-      "#c084fc", // purple
-      "#f472b6", // pink
-    ]
+      // Update position
+      particle.x += particle.velocity.x
+      particle.y += particle.velocity.y
 
-    const shapes = ["circle", "square", "triangle", "line"]
+      // Update rotation
+      particle.rotation += particle.rotationSpeed
 
-    for (let i = 0; i < confettiCount; i++) {
-      confetti.push({
-        x: Math.random() * canvas.width,
-        y: -20 - Math.random() * 100,
-        size: Math.random() * 10 + 5,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        shape: shapes[Math.floor(Math.random() * shapes.length)],
-        velocity: {
-          x: Math.random() * 6 - 3,
-          y: Math.random() * 3 + 2,
-        },
-        rotation: Math.random() * 360,
-        rotationSpeed: Math.random() * 10 - 5,
-        opacity: 1,
-      })
-    }
+      // Draw particle
+      ctx.save()
+      ctx.translate(particle.x, particle.y)
+      ctx.rotate((particle.rotation * Math.PI) / 180)
+      ctx.fillStyle = particle.color
 
-    // Play sound effect
-    const audio = new Audio("/sounds/confetti-pop.mp3")
-    audio.volume = 0.3
-    audio.play().catch((err) => console.error("Failed to play sound:", err))
-
-    // Animation loop
-    let animationFrame: number
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      let stillActive = false
-
-      for (let i = 0; i < confetti.length; i++) {
-        const p = confetti[i]
-
-        p.x += p.velocity.x
-        p.y += p.velocity.y
-        p.rotation += p.rotationSpeed
-
-        // Add gravity and wind
-        p.velocity.y += 0.1
-        p.velocity.x += Math.random() * 0.1 - 0.05
-
-        // Fade out when reaching bottom
-        if (p.y > canvas.height * 0.7) {
-          p.opacity -= 0.01
-        }
-
-        if (p.opacity > 0) {
-          stillActive = true
-
-          ctx.save()
-          ctx.translate(p.x, p.y)
-          ctx.rotate((p.rotation * Math.PI) / 180)
-          ctx.globalAlpha = p.opacity
-          ctx.fillStyle = p.color
-
-          // Draw different shapes
-          if (p.shape === "square") {
-            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size)
-          } else if (p.shape === "circle") {
-            ctx.beginPath()
-            ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2)
-            ctx.fill()
-          } else if (p.shape === "triangle") {
-            ctx.beginPath()
-            ctx.moveTo(0, -p.size / 2)
-            ctx.lineTo(p.size / 2, p.size / 2)
-            ctx.lineTo(-p.size / 2, p.size / 2)
-            ctx.closePath()
-            ctx.fill()
-          } else if (p.shape === "line") {
-            ctx.lineWidth = p.size / 4
-            ctx.strokeStyle = p.color
-            ctx.beginPath()
-            ctx.moveTo(-p.size / 2, 0)
-            ctx.lineTo(p.size / 2, 0)
-            ctx.stroke()
-          }
-
-          ctx.restore()
-        }
+      // Draw different shapes
+      if (index % 3 === 0) {
+        // Rectangle
+        ctx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size)
+      } else if (index % 3 === 1) {
+        // Circle
+        ctx.beginPath()
+        ctx.arc(0, 0, particle.size / 2, 0, Math.PI * 2)
+        ctx.fill()
+      } else {
+        // Triangle
+        ctx.beginPath()
+        ctx.moveTo(0, -particle.size / 2)
+        ctx.lineTo(particle.size / 2, particle.size / 2)
+        ctx.lineTo(-particle.size / 2, particle.size / 2)
+        ctx.closePath()
+        ctx.fill()
       }
 
-      if (stillActive) {
-        animationFrame = requestAnimationFrame(animate)
+      ctx.restore()
+
+      // Remove particles that are off screen
+      if (particle.y > canvas.height) {
+        particlesRef.current[index] = {
+          ...particle,
+          y: -particle.size,
+          x: Math.random() * canvas.width,
+        }
       }
-    }
+    })
 
-    animate()
+    // Continue animation
+    animationRef.current = requestAnimationFrame(animateConfetti)
+  }
 
-    return () => {
-      cancelAnimationFrame(animationFrame)
-      audio.pause()
-      audio.src = ""
-    }
-  }, [])
+  if (!isActive && !showConfetti) {
+    return null
+  }
 
   return (
-    <motion.div
-      className="fixed inset-0 z-50 pointer-events-none"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <canvas ref={canvasRef} className="w-full h-full" />
-    </motion.div>
+    <>
+      <audio ref={audioRef} src="/sounds/confetti-pop.mp3" preload="auto" />
+
+      <div className="fixed inset-0 pointer-events-none z-50">
+        <canvas ref={canvasRef} className="w-full h-full" />
+
+        {/* Bouncing elements effect */}
+        <div className="absolute inset-0 overflow-hidden">
+          {emojis.map((item, i) => (
+            <div
+              key={i}
+              className="absolute animate-bounce-around"
+              style={item.style}
+            >
+              {item.emoji}
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
   )
 }
