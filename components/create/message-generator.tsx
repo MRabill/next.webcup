@@ -41,6 +41,12 @@ export default function MessageGenerator({
   const [editedMessage, setEditedMessage] = useState(message)
   const [editedTitle, setEditedTitle] = useState(title)
   const { toast } = useToast()
+
+  // Log received props for debugging
+  useEffect(() => {
+    console.log('MessageGenerator received props:', { username, email });
+  }, [username, email]);
+
   // Generate content using the API
 const generateContent = useCallback(async () => {
   if (!mood || !relationship || !context) {

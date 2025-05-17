@@ -126,7 +126,16 @@ export async function generateFarewellMessage(
     
     // Format the mood name for better readability
     const formattedMood = formatMoodName(sanitizedMood);
-      const prompt = `Generate a farewell message from the perspective of ${sanitizedUsername} (${sanitizedEmail}) who is leaving with a ${formattedMood} mood. The relationship type being left is ${sanitizedRelationship} and the context is "${sanitizedContext}". The exit page title is "${sanitizedTitle}".`;
+    
+    // Debug info
+    console.log('Generating farewell message with:', {
+      username: sanitizedUsername,
+      email: sanitizedEmail,
+      mood: formattedMood,
+      relationship: sanitizedRelationship
+    });
+    
+    const prompt = `Generate a farewell message from the perspective of ${sanitizedUsername} (${sanitizedEmail}) who is leaving with a ${formattedMood} mood. The relationship type being left is ${sanitizedRelationship} and the context is "${sanitizedContext}". The exit page title is "${sanitizedTitle}".`;
     
     const instructions = `You are a farewell message generator. Generate a personalized farewell message from the first-person perspective of the person who is leaving. The message should match the specified mood (${formattedMood}), relationship type (${sanitizedRelationship}), and context. Make it personal using the provided username as if they are writing it themselves, and consider the title of the exit page. Only respond with the farewell message, nothing more.`;
     

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -50,6 +50,20 @@ export default function CreatePage() {
     username: "Anonymous User",  // Default username
     email: "anonymous@example.com"  // Default email
   })
+
+  useEffect(() => {
+    // Load user data from localStorage
+    const storedUsername = localStorage.getItem("username")
+    const storedEmail = localStorage.getItem("email")
+
+    if (storedUsername) {
+      setFormData((prev) => ({ ...prev, username: storedUsername }))
+    }
+
+    if (storedEmail) {
+      setFormData((prev) => ({ ...prev, email: storedEmail }))
+    }
+  }, [])
 
   const tabs = [
     { id: "mood", label: "Mood" },
@@ -105,6 +119,24 @@ export default function CreatePage() {
 
   const selectedMood = moods.find((m) => m.id === formData.mood)
   const currentMusic = formData.mood ? getMusicForMood(formData.mood) : getMusicForMood("default")
+
+  // Load user data from localStorage when component mounts
+  useEffect(() => {
+    // Only run in browser environment
+    if (typeof window !== 'undefined') {
+      const savedUsername = localStorage.getItem('endpage_username')
+      const savedEmail = localStorage.getItem('endpage_email')
+      
+      if (savedUsername || savedEmail) {
+        console.log('Loading user data from localStorage:', { savedUsername, savedEmail })
+        setFormData(prev => ({
+          ...prev,
+          username: savedUsername || prev.username,
+          email: savedEmail || prev.email
+        }))
+      }
+    }
+  }, [])
 
   // Handle mood transition completion
   const handleTransitionComplete = () => {
@@ -234,6 +266,8 @@ export default function CreatePage() {
                   message={formData.message}
                   title={formData.title}
                   onUpdate={(data) => updateFormData(data)}
+                  username={formData.username}
+                  email={formData.email}
                 />
               </TabsContent>
 
