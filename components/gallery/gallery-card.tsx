@@ -129,7 +129,7 @@ export default function GalleryCard({ page }: GalleryCardProps) {
       <Card
         className={`relative flex flex-col justify-between h-full bg-gradient-to-br ${getMoodGradient(
           page.mood
-        )} border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group overflow-hidden`}
+        )} border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl overflow-hidden`}
       >
         <div className="absolute inset-0 bg-black/30 z-0" />
 
@@ -163,38 +163,25 @@ export default function GalleryCard({ page }: GalleryCardProps) {
               <Eye className="h-4 w-4 mr-1" />
               {page.views}
             </div>
-            <div className="relative mr-4 group">
-              <div className="flex items-center text-white/80 hover:text-white transition cursor-pointer">
-                <Heart className="h-4 w-4 mr-1" />
-                {reactions.like}
-              </div>
+            <div className="relative mr-4">
+              <div className="flex items-center text-white/80 transition">
+                <div className="group relative">
+                  <Heart className="h-4 w-4 mr-1 cursor-pointer hover:scale-110 transition-transform" />
 
-              <div
-                className="absolute bottom-full left-0 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto pointer-events-none transition-all duration-200 bg-black/80 px-3 py-2 rounded-xl shadow-lg z-20"
-              >
-                <ReactionBar onReact={handleReact} reactions={reactions} />
+
+                  <div className="absolute bottom-full left-0 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto pointer-events-none transition-all duration-200 bg-black/80 px-3 py-2 rounded-xl shadow-lg z-20">
+                    <ReactionBar onReact={handleReact} reactions={reactions} />
+                  </div>
+                </div>
+                <span>{reactions.like}</span>
               </div>
             </div>
-
-
             <div className="flex items-center">
               <MessageSquare className="h-4 w-4 mr-1" />
               {page.comments}
             </div>
           </div>
         </CardContent>
-
-        <CardFooter className="px-6 pb-6 pt-0 relative z-10">
-          <Link href={`/preview`} className="w-full">
-            <Button
-              variant="outline"
-              className="w-full border-white/20 text-white hover:border-purple-400 hover:text-purple-400 transition"
-            >
-              View Exit Page
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </CardFooter>
       </Card>
     </motion.div>
   )
