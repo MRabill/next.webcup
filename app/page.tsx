@@ -363,8 +363,8 @@ export default function LandingPage() {
                 boxShadow: (activeFeature === index && expandedCardIndex === null) ? "0 0 20px rgba(255, 255, 255, 0.2)" : "none",
               }}
               transition={{ delay: 0.1 * index, duration: 0.5 }}
-            >
-              <FeatureCard
+            >             
+             <FeatureCard
                 icon={feature.icon}
                 title={feature.title}
                 description={feature.description}
@@ -374,6 +374,7 @@ export default function LandingPage() {
                 onClick={() => handleFeatureClick(index)}
                 initialRotation={feature.rotation}
                 carouselItems={feature.carouselItems}
+                emojiType={index === 0 ? "rage" : index === 1 ? "heart" : index === 2 ? "funny" : "sad"}
               />
             </motion.div>
           ))}

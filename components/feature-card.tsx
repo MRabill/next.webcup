@@ -1,6 +1,6 @@
 "use client"
 
-import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import type React from "react"
 import { useRef, useState, useEffect } from "react"
@@ -11,6 +11,12 @@ interface CarouselItem {
   description: string
   image?: string
   color?: string
+}
+
+// Define emoji types for each feature type
+interface EmojiConfig {
+  emojis: string[]
+  count: number
 }
 
 interface FeatureCardProps {
@@ -24,6 +30,7 @@ interface FeatureCardProps {
   rotation?: number
   initialRotation?: number
   carouselItems?: CarouselItem[]
+  emojiType?: "rage" | "heart" | "funny" | "sad" // Type of emojis to show
 }
 
 export function FeatureCard({
@@ -37,43 +44,57 @@ export function FeatureCard({
   rotation = 0,
   initialRotation = 0,
   carouselItems = [],
+  emojiType,
 }: FeatureCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
-  const [isTilting, setIsTilting] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
   const [direction, setDirection] = useState(0)
+  const [showEmojis, setShowEmojis] = useState(false)
+  const [hasTriggeredEmojis, setHasTriggeredEmojis] = useState(false)
   
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  
-  // More pronounced rotation angles for stronger effect
-  const rotateX = useTransform(y, [-100, 100], [35, -35])
-  const rotateY = useTransform(x, [-100, 100], [-35, 35])
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current || !isTilting || isExpanded) return
-    
-    const rect = cardRef.current.getBoundingClientRect()
-    
-    // Calculate mouse position relative to card center
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
-    
-    // Update motion values
-    x.set(e.clientX - centerX)
-    y.set(e.clientY - centerY)
-  }
-
-  const handleMouseEnter = () => {
-    if (!isExpanded) setIsTilting(true)
-  }
-
-  const handleMouseLeave = () => {
-    setIsTilting(false)
-    x.set(0)
-    y.set(0)
-  }
+  // Setup emoji configuration based on the emoji type
+  const getEmojiConfig = (): EmojiConfig => {
+    switch(emojiType) {
+      case "rage":
+        return { 
+          emojis: ["😡", "🤬", "💢", "🔥", "💥", "👊", "😤"],
+          count: 10
+        };
+      case "heart":
+        return { 
+          emojis: ["❤️", "💖", "💕", "💓", "💗", "💘", "💝"],
+          count: 10
+        };
+      case "funny":
+        return { 
+          emojis: ["😂", "🤣", "😆", "😝", "🥳", "🎉", "🎊"],
+          count: 10
+        };
+      case "sad":
+        return { 
+          emojis: ["😢", "😭", "💧", "💦", "☔", "☁️", "💔"],
+          count: 10
+        };
+      default:
+        return { 
+          emojis: ["✨", "⭐", "🌟"],
+          count: 8
+        };
+    }
+  };
+    // Generate fixed emoji positions only once
+  const [emojiPositions] = useState(() => {
+    const config = getEmojiConfig();
+    return Array.from({ length: config.count }, () => ({
+      x: Math.random() * 500 - 250, // Wider spread: -250px to 250px (increased from 300px range)
+      y: Math.random() * 500 - 250, // Wider spread: -250px to 250px (increased from 300px range)
+      scale: 1.5 + Math.random() * 0.3, // Smaller scale: 1.5-1.8 (reduced from 2-2.5)
+      rotation: Math.random() * 360,
+      emoji: config.emojis[Math.floor(Math.random() * config.emojis.length)],
+      duration: 4, // Fixed duration - more predictable
+    }));
+  });
   
   const handleClick = () => {
     if (onClick && !isExpanded) onClick()
@@ -110,15 +131,13 @@ export function FeatureCard({
       }
     }
     
-    // Add the event listener
     document.addEventListener('mousedown', handleClickOutside)
-    
-    // Clean up
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isExpanded, onClick])
 
+  // Carousel variants
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 200 : -200,
@@ -141,7 +160,15 @@ export function FeatureCard({
       zIndex: 0,
     }),
   }
-
+  
+  // Simplified hover handling
+  const handleHoverStart = () => {
+    if (!isExpanded && !showEmojis) {
+      setShowEmojis(true)
+      setHasTriggeredEmojis(true)
+    }
+  }
+  
   return (
     <motion.div
       ref={cardRef}
@@ -151,36 +178,25 @@ export function FeatureCard({
         color,
         borderColor,
         isActive && "ring-2 ring-white/20",
-        isTilting ? "shadow-2xl" : "shadow-xl",
         isExpanded ? "w-[500px] h-[400px] z-30" : "w-64 p-4"
       )}
-      style={{
-        perspective: "1000px",
-        transformStyle: "preserve-3d",
-        rotateX: isTilting && !isExpanded ? rotateX : 0,
-        rotateY: isTilting && !isExpanded ? rotateY : 0,
-        rotate: isTilting || isExpanded ? 0 : initialRotation,
-        zIndex: isExpanded ? 50 : 'auto',
-      }}
-      whileHover={{ 
-        scale: isExpanded ? 1 : 1.05, 
-        zIndex: isExpanded ? 50 : 20,
-      }}
+      // Fixed animation values instead of dynamic tilting
       animate={{
         scale: isExpanded ? 1.2 : 1,
-        transition: {
-          type: "spring",
-          stiffness: 300,
-          damping: 25
-        }
+        rotate: isExpanded ? 0 : initialRotation,
+        boxShadow: isActive ? "0 0 20px rgba(255, 255, 255, 0.2)" : "0 10px 30px rgba(0, 0, 0, 0.1)",
       }}
-      whileTap={!isExpanded ? { scale: 0.95 } : undefined}
+      whileHover={{
+        scale: isExpanded ? 1.2 : 1.05,
+        zIndex: isExpanded ? 50 : 20,
+      }}
+      onHoverStart={handleHoverStart}
       onClick={handleClick}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      transition={{ 
-        duration: 0.3
+      transition={{
+        type: "spring",
+        stiffness: 100,
+        damping: 20,
+        mass: 1.2,
       }}
       layout
     >
@@ -189,20 +205,62 @@ export function FeatureCard({
         className="absolute inset-0 rounded-xl opacity-30 -z-10"
         style={{
           background: "linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%)",
-          transformStyle: "preserve-3d",
-          translateZ: -20,
         }}
         layout
       />
       
+      {/* Flying emojis when hovering - with guaranteed full animation cycle */}
+      {!isExpanded && emojiType && (
+        <AnimatePresence>
+          {showEmojis && (
+            <motion.div
+              className="absolute inset-0 overflow-visible pointer-events-none z-30"
+              onAnimationComplete={() => {
+                setShowEmojis(false);
+              }}
+            >
+              {emojiPositions.map((emoji, index) => (
+                <motion.div
+                  key={index}
+                  className="absolute text-4xl" // Reduced from text-5xl to text-4xl
+                  initial={{ 
+                    x: 0, 
+                    y: 0, 
+                    opacity: 0,
+                    scale: 0,
+                    rotate: 0
+                  }}
+                  animate={{ 
+                    x: emoji.x, 
+                    y: emoji.y, 
+                    opacity: [0, 1, 1, 0],
+                    scale: [0, emoji.scale, emoji.scale, 0],
+                    rotate: emoji.rotation
+                  }}
+                  transition={{ 
+                    duration: emoji.duration,
+                    ease: "easeOut",
+                    times: [0, 0.1, 0.7, 1]
+                  }}
+                  style={{
+                    left: "50%",
+                    top: "50%",
+                    filter: "drop-shadow(0 0 5px rgba(0,0,0,0.7))",
+                    transform: "translate(-50%, -50%)"
+                  }}
+                >
+                  {emoji.emoji}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+      
       {!isExpanded ? (
         /* Normal card content */
         <motion.div 
-          className="relative z-10 transform-gpu"
-          style={{ 
-            transformStyle: "preserve-3d", 
-            translateZ: 30,
-          }}
+          className="relative z-10"
           layout
         >
           <div className="mb-3">{icon}</div>
