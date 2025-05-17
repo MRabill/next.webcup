@@ -20,7 +20,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-lexend">{children}</body>
+      <body className="font-lexend bg-black">
+        {children}
+      </body>
     </html>
   )
 }
