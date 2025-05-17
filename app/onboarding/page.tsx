@@ -32,42 +32,42 @@ export default function OnboardingPage() {
       name: "Rage Mode",
       description: "Let out all your frustration and anger",
       color: "bg-red-500",
-      prompt: "Write an angry departure message for someone who was fired from their job",
+      prompt: "Write an angry departure message from my perspective as someone who was fired from their job",
     },
     {
       id: "sad",
       name: "Tearful Goodbye",
       description: "Express your sadness and nostalgia",
       color: "bg-blue-500",
-      prompt: "Write a sad, emotional goodbye message for leaving a job you loved",
+      prompt: "Write a sad, emotional goodbye message from my perspective as someone leaving a job I loved",
     },
     {
       id: "happy",
       name: "Joyful Exit",
       description: "Celebrate your new beginning with joy",
       color: "bg-yellow-500",
-      prompt: "Write a happy, optimistic departure message for someone starting a new chapter",
+      prompt: "Write a happy, optimistic departure message from my perspective as someone starting a new chapter",
     },
     {
       id: "sarcastic",
       name: "Sarcastic Farewell",
       description: "Say goodbye with wit and sarcasm",
       color: "bg-purple-500",
-      prompt: "Write a sarcastic, witty goodbye message for leaving a toxic workplace",
+      prompt: "Write a sarcastic, witty goodbye message from my perspective as someone leaving a toxic workplace",
     },
     {
       id: "grateful",
       name: "Grateful Departure",
       description: "Express gratitude for the experience",
       color: "bg-green-500",
-      prompt: "Write a grateful, appreciative goodbye message for leaving a team",
+      prompt: "Write a grateful, appreciative goodbye message from my perspective as someone leaving a team",
     },
     {
       id: "dramatic",
       name: "Dramatic Exit",
       description: "Make your exit as dramatic as possible",
       color: "bg-orange-500",
-      prompt: "Write a dramatic, over-the-top goodbye message for ending a relationship",
+      prompt: "Write a dramatic, over-the-top goodbye message from my perspective as someone ending a relationship",
     },
   ]
 
@@ -89,15 +89,16 @@ export default function OnboardingPage() {
           break
         case "grateful":
           setMood("calm")
-          break
-        case "dramatic":
+          break       
           setMood("heartfelt")
           break
         default:
           setMood("default")
       }
-    }  }, [selectedTone])
-    // Start animation when component mounts
+    }
+  }, [selectedTone])
+
+  // Start animation when component mounts
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimationComplete(true)
@@ -116,13 +117,25 @@ export default function OnboardingPage() {
       setEmail(savedEmail)
     }
   }, [])
+  
   const nextStep = () => {
     // Save user info to localStorage when proceeding from first step
     if (currentStep === 0) {
+      if (!username || !email) return;
+      
       localStorage.setItem('endpage_username', username)
       localStorage.setItem('endpage_email', email)
       
-      // Redirect directly to create page instead of next onboarding step
+      // Also save selected mood if user has already chosen one
+      if (selectedTone) {
+        localStorage.setItem('endpage_tone', selectedTone)
+      }
+      
+      if (situation) {
+        localStorage.setItem('endpage_situation', situation)
+      }
+      
+      // Redirect directly to create page with user information
       router.push('/create')
       return
     }
@@ -210,34 +223,34 @@ export default function OnboardingPage() {
             >
               Skip
             </button>
-            
-            {/* Movie-like dramatic line */}
+              {/* Movie-like dramatic line */}
             <motion.div 
-              className="h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent"              initial={{ width: 0 }}
+              className="h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent"
+              initial={{ width: 0 }}
               animate={{ width: "80%" }}
               transition={{ duration: 0.7, ease: "easeInOut" }}
             />
-            
-            {/* Main title with typewriter effect */}
+              {/* Main title with typewriter effect */}
             <motion.h1 
-              className="mt-6 text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-center"              initial={{ opacity: 0 }}
+              className="mt-6 text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-center"
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.7 }}
             >
               Welcome to Your End Page
             </motion.h1>
-            
-            {/* Tagline with fade-in */}
+              {/* Tagline with fade-in */}
             <motion.p
-              className="text-xl text-gray-300 mt-4 max-w-lg text-center"              initial={{ opacity: 0, y: 20 }}
+              className="text-xl text-gray-300 mt-4 max-w-lg text-center"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 1.2 }}
             >
               Create memorable departure messages with style, emotion, and impact
             </motion.p>
-            
-            {/* Emotion icons that fly in from different directions */}
-            <motion.div className="flex gap-8 mt-8">              {[
+              {/* Emotion icons that fly in from different directions */}
+            <motion.div className="flex gap-8 mt-8">
+              {[
                 { icon: "💔", delay: 1.3, x: -100 },
                 { icon: "😢", delay: 1.4, y: 80 },
                 { icon: "🔥", delay: 1.5, x: 100 },
@@ -270,10 +283,10 @@ export default function OnboardingPage() {
                 </motion.div>
               ))}
             </motion.div>
-            
-            {/* Bottom dramatic line */}
+              {/* Bottom dramatic line */}
             <motion.div 
-              className="h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent mt-8"              initial={{ width: 0 }}
+              className="h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent mt-8"
+              initial={{ width: 0 }}
               animate={{ width: "80%" }}
               transition={{ duration: 0.7, delay: 1.8, ease: "easeInOut" }}
             />

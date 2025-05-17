@@ -22,7 +22,7 @@ export const moods: MoodType[] = [
       "Gentle animations with hearts",
       "Emotional background music",
     ],
-    prompt: "Generate a heartfelt, emotional goodbye message expressing gratitude and fond memories.",
+    prompt: "Generate a heartfelt, emotional goodbye message from my perspective, where I express gratitude and fond memories as the person leaving.",
     icon: Heart,
   },
   {
@@ -35,7 +35,7 @@ export const moods: MoodType[] = [
       "Fire and explosion animations",
       "Intense background sounds",
     ],
-    prompt: "Generate an angry, frustrated goodbye message that expresses disappointment and frustration.",
+    prompt: "Generate an angry, frustrated goodbye message from my perspective as the person who is leaving, expressing my disappointment and frustration.",
     icon: Flame,
   },
   {
@@ -44,7 +44,7 @@ export const moods: MoodType[] = [
     description: "Make them laugh one last time with a humorous departure.",
     color: "yellow",
     features: ["Witty, sarcastic tone", "Bouncy, playful animations", "Upbeat, comedic sounds"],
-    prompt: "Generate a funny, witty goodbye message with humor and light-hearted jokes.",
+    prompt: "Generate a funny, witty goodbye message from my perspective as the person leaving, with humor and light-hearted jokes.",
     icon: Laugh,
   },
   {
@@ -57,7 +57,7 @@ export const moods: MoodType[] = [
       "Rain and tear animations",
       "Sad violin or piano music",
     ],
-    prompt: "Generate a sad, emotional goodbye message expressing loss and nostalgia.",
+    prompt: "Generate a sad, emotional goodbye message from my perspective as the person leaving, expressing my feelings of loss and nostalgia.",
     icon: Frown,
   },
   {
@@ -70,7 +70,7 @@ export const moods: MoodType[] = [
       "Gentle floating animations",
       "Ambient, calming sounds",
     ],
-    prompt: "Generate a calm, peaceful goodbye message that's accepting and forward-looking.",
+    prompt: "Generate a calm, peaceful goodbye message from my perspective that's accepting and forward-looking as I depart.",
     icon: Cloud,
   },
   {
@@ -83,7 +83,7 @@ export const moods: MoodType[] = [
       "Digital, glitch animations",
       "Electronic, mechanical sounds",
     ],
-    prompt: "Generate a robotic, emotionless goodbye message that's factual and direct.",
+    prompt: "Generate a robotic, emotionless goodbye message from my perspective as the person departing, that's factual and direct.",
     icon: Cpu,
   },
 ]
