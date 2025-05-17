@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Heart, Frown, Angry, Laugh, ThumbsUp, Zap, ArrowRight, ArrowLeft, User, Mail } from "lucide-react"
@@ -13,7 +13,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import type { EmotionTone } from "@/lib/types"
 import TonePreview from "@/components/tone-preview"
 import ConstellationBackground from "@/components/effects/constellation-background"
-import EnhancedParticles from "@/components/effects/enhanced-particles"
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -25,6 +24,7 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [animationComplete, setAnimationComplete] = useState(false)
   const [mood, setMood] = useState("default")
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const emotionTones: EmotionTone[] = [
     {
@@ -70,6 +70,21 @@ export default function OnboardingPage() {
       prompt: "Write a dramatic, over-the-top goodbye message from my perspective as someone ending a relationship",
     },
   ]
+
+  // Play start sound when component mounts
+  useEffect(() => {
+    const audio = new Audio("/sounds/start.mp3")
+    audio.volume = 0.5
+    audio.play().catch((err) => console.error("Failed to play start sound:", err))
+    audioRef.current = audio
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.src = ""
+      }
+    }
+  }, [])
 
   // Handle mood changes when tone is selected
   useEffect(() => {
@@ -196,13 +211,9 @@ export default function OnboardingPage() {
       <ConstellationBackground
         dotColor="rgba(255, 255, 255, 0.6)"
         lineColor="rgba(255, 255, 255, 0.1)"
-        dotCount={100}
+        dotCount={380}
         className="z-0"
-      />
-      <EnhancedParticles
         mood={mood}
-        intensity="medium"
-        className="z-0"
       />
       {/* Cinematic Intro Animation */}
       <AnimatePresence>
@@ -217,7 +228,7 @@ export default function OnboardingPage() {
             {/* Skip button */}
             <button
               onClick={() => setAnimationComplete(true)}
-              className="absolute top-4 right-4 px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-sm text-white/70 hover:text-white transition-colors"
+              className="absolute bottom-4 right-4 px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-sm text-white/70 hover:text-white transition-colors"
             >
               Skip
             </button>
