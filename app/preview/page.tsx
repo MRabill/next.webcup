@@ -45,7 +45,7 @@ import { getExitPageData, type ExitPageData } from "@/lib/exit-page-store"
 import html2canvas from "html2canvas"
 import { Separator } from "@/components/ui/separator"
 
-const REACTION_EMOJIS = ["👍", "❤️", "😢", "😮", "👏", "🔥"]
+const REACTION_EMOJIS = ["👍", "❤️", "😢", "😮", "👏", "🔥"] //test
 
 export default function PreviewPage() {
   const router = useRouter()
