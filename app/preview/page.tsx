@@ -28,7 +28,10 @@ import {
   Briefcase,
   Star,
   ArrowRight,
-  Users
+  Users,
+  Pencil,
+  Trash2,
+  Plus
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
@@ -50,6 +53,7 @@ const REACTION_EMOJIS = ["👍", "❤️", "😢", "😮", "👏", "🔥"] //tes
 export default function PreviewPage() {
   const router = useRouter()
   const contentRef = useRef<HTMLDivElement>(null)
+  const navbarRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll()
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0])
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95])
@@ -58,6 +62,7 @@ export default function PreviewPage() {
   const [comment, setComment] = useState("")
   const [mood, setMood] = useState("dramatic")
   const [isLoaded, setIsLoaded] = useState(false)
+  const [hasScrolled, setHasScrolled] = useState(false)
   const [likedComments, setLikedComments] = useState<number[]>([])
   const [previousMood, setPreviousMood] = useState<string | undefined>(undefined)
   const [showMoodTransition, setShowMoodTransition] = useState(false)
@@ -67,41 +72,34 @@ export default function PreviewPage() {
   const [showShareDialog, setShowShareDialog] = useState(false)
   const [commentReactions, setCommentReactions] = useState<Record<number, string[]>>({})
   const [activeTab, setActiveTab] = useState("message")
+  const [localStorageAvailable, setLocalStorageAvailable] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
-  // Timeline data
+  // Check if localStorage is available
+  const checkLocalStorageAvailability = () => {
+    try {
+      const testKey = '__test_key__';
+      localStorage.setItem(testKey, testKey);
+      localStorage.removeItem(testKey);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Timeline data with default values
   const [milestones, setMilestones] = useState([
     {
       id: 1,
-      date: "June 2020",
-      title: "Joined the company",
-      description: "Started as a Junior Developer",
+      date: "2025-19-05",
+      title: "Joined Endpage",
+      description: "Started an Endpage to document his journey",
       icon: <Briefcase className="h-5 w-5 text-indigo-400" />
     },
-    {
-      id: 2,
-      date: "March 2021",
-      title: "First major project",
-      description: "Led the redesign of our flagship product",
-      icon: <Star className="h-5 w-5 text-yellow-400" />
-    },
-    {
-      id: 3,
-      date: "January 2022",
-      title: "Promotion",
-      description: "Promoted to Senior Developer role",
-      icon: <Award className="h-5 w-5 text-emerald-400" />
-    },
-    {
-      id: 4,
-      date: "September 2024",
-      title: "Team leadership",
-      description: "Managed a team of 5 developers",
-      icon: <Users className="h-5 w-5 text-blue-400" />
-    }
+   
   ])
 
-  // Future plans
+  // Future plans with default values
   const [futurePlans, setFuturePlans] = useState([
     {
       id: 1,
@@ -119,42 +117,18 @@ export default function PreviewPage() {
       description: "Feel free to reach out if you have an exciting opportunity!"
     }
   ])
-
-  // Mock comments data
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: {
-        name: "Alex Johnson",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "This is such a powerful goodbye! I'm going to miss working with you.",
-      timestamp: "2 hours ago",
-      likes: 12,
-    },
-    {
-      id: 2,
-      author: {
-        name: "Jamie Smith",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "You always knew how to make an exit! Best of luck on your new journey.",
-      timestamp: "1 hour ago",
-      likes: 8,
-    },
-    {
-      id: 3,
-      author: {
-        name: "Taylor Wilson",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "I'm speechless. This is the most dramatic exit I've ever seen!",
-      timestamp: "45 minutes ago",
-      likes: 5,
-    },
-  ])  
-
-  useEffect(() => {
+  // Comments stored in local storage
+  const [comments, setComments] = useState<Array<{
+    id: number;
+    author: {
+      name: string;
+      avatar: string;
+    };
+    content: string;
+    timestamp: string;
+    likes: number;
+  }>>([])
+    useEffect(() => {
     setIsLoaded(true)
 
     // Load saved exit page data
@@ -167,61 +141,226 @@ export default function PreviewPage() {
       }
     }
 
+    // Add scroll event listener
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setHasScrolled(scrollPosition > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
     // Generate a public link
     setPublicLink(generateUniqueLink())
 
     // Trigger mood transition effect
     setShowMoodTransition(true)
-    setTimeout(() => setShowMoodTransition(false), 2000)
+    const moodTransitionTimer = setTimeout(() => setShowMoodTransition(false), 2000)
 
     // Simulate the "slam the door" effect
-    const timer = setTimeout(() => {
+    const doorSlamTimer = setTimeout(() => {
       const doorSlam = new Audio("/sounds/door-slam.mp3")
       if (!isMuted) {
         doorSlam.volume = 0.3
         doorSlam.play().catch((err) => console.error("Failed to play sound:", err))
       }
-    }, 1000)
+    }, 1000)    
+    
+    // Check localStorage availability
+    const storageAvailable = checkLocalStorageAvailability()
+    setLocalStorageAvailable(storageAvailable)    
+    
+    // Load comments from localStorage if available
+    if (storageAvailable) {
+      loadCommentsFromLocalStorage();
+      loadTimelineFromLocalStorage();
+    }
 
-    // Initialize some comment reactions
-    setCommentReactions({
-      1: ["👍", "❤️", "🔥"],
-      2: ["👏", "😮"],
-      3: ["❤️"]
-    })
+    // Cleanup function to remove event listeners and clear timers
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(moodTransitionTimer);
+      clearTimeout(doorSlamTimer);
+    };
+  }, [isMuted]); // Add isMuted to dependency array for the door slam effect
 
-    return () => clearTimeout(timer)
-  }, [isMuted])
+  // Define localStorage functions outside of useEffect
+  const saveCommentsToLocalStorage = (comments: any[], reactions: Record<number, string[]>, liked: number[] = likedComments) => {
+    if (!localStorageAvailable) return;
+    
+    try {
+      localStorage.setItem('exit_page_comments', JSON.stringify(comments));
+      localStorage.setItem('exit_page_reactions', JSON.stringify(reactions));
+      localStorage.setItem('exit_page_liked_comments', JSON.stringify(liked));
+    } catch (e) {
+      console.error('Failed to save comments to localStorage:', e);
+    }
+  };
 
+  // Function to save timeline data to localStorage
+  const saveTimelineToLocalStorage = (milestoneData: any[] = milestones, futurePlansData: any[] = futurePlans) => {
+    if (!localStorageAvailable) return;
+    
+    try {
+      // Convert React elements to serializable strings before saving
+      const serializableMilestones = milestoneData.map(milestone => {
+        // Create a copy to avoid modifying the original
+        const serializedMilestone = { ...milestone };
+        
+        // Convert icon React element to a string identifier
+        if (serializedMilestone.icon) {
+          // Identify the icon type by its class name or other properties
+          const iconElement = serializedMilestone.icon as React.ReactElement;
+          if (iconElement.type === Briefcase) {
+            serializedMilestone.iconType = 'briefcase';
+          } else if (iconElement.type === Star) {
+            serializedMilestone.iconType = 'star';
+          } else if (iconElement.type === Award) {
+            serializedMilestone.iconType = 'award';
+          } else if (iconElement.type === Users) {
+            serializedMilestone.iconType = 'users';
+          } else {
+            serializedMilestone.iconType = 'briefcase'; // Default fallback
+          }
+          
+          // Remove the non-serializable icon property
+          delete serializedMilestone.icon;
+        }
+        
+        return serializedMilestone;
+      });
+      
+      localStorage.setItem('exit_page_milestones', JSON.stringify(serializableMilestones));
+      localStorage.setItem('exit_page_future_plans', JSON.stringify(futurePlansData));
+    } catch (e) {
+      console.error('Failed to save timeline data to localStorage:', e);
+    }
+  };
+  
+  const loadCommentsFromLocalStorage = () => {
+    if (!localStorageAvailable) return;
+    
+    try {
+      const savedComments = localStorage.getItem('exit_page_comments');
+      const savedReactions = localStorage.getItem('exit_page_reactions');
+      const savedLikedComments = localStorage.getItem('exit_page_liked_comments');
+      
+      if (savedComments) {
+        setComments(JSON.parse(savedComments));
+      }
+      
+      if (savedReactions) {
+        setCommentReactions(JSON.parse(savedReactions));
+      }
+      
+      if (savedLikedComments) {
+        setLikedComments(JSON.parse(savedLikedComments));
+      }
+    } catch (e) {
+      console.error('Failed to load comments from localStorage:', e);
+    }
+  };
+
+  // Function to load timeline data from localStorage
+  const loadTimelineFromLocalStorage = () => {
+    if (!localStorageAvailable) return;
+    
+    try {
+      const savedMilestones = localStorage.getItem('exit_page_milestones');
+      const savedFuturePlans = localStorage.getItem('exit_page_future_plans');
+      
+      if (savedMilestones) {
+        // Parse the JSON string and transform it back to include React elements
+        const parsedMilestones = JSON.parse(savedMilestones);
+        
+        // Convert serialized milestones back to objects with React elements
+        const milestonesWithIcons = parsedMilestones.map((milestone: any) => {
+          // If we have an iconType property, convert it back to a React element
+          if (milestone.iconType) {
+            let icon;
+            switch(milestone.iconType) {
+              case 'star': 
+                icon = <Star className="h-5 w-5 text-yellow-400" />;
+                break;
+              case 'award': 
+                icon = <Award className="h-5 w-5 text-emerald-400" />;
+                break;
+              case 'users': 
+                icon = <Users className="h-5 w-5 text-blue-400" />;
+                break;
+              case 'briefcase':
+              default:
+                icon = <Briefcase className="h-5 w-5 text-indigo-400" />;
+                break;
+            }
+            // Replace the iconType with the actual icon
+            return {
+              ...milestone,
+              icon
+            };
+          }
+          return milestone;
+        });
+        
+        setMilestones(milestonesWithIcons);
+      }
+      
+      if (savedFuturePlans) {
+        setFuturePlans(JSON.parse(savedFuturePlans));
+      }
+    } catch (e) {
+      console.error('Failed to load timeline data from localStorage:', e);
+    }
+  };
   const handleLikeComment = (id: number) => {
+    let updatedComments = [...comments];
     if (likedComments.includes(id)) {
       // Unlike
-      setComments(comments.map((comment) => (comment.id === id ? { ...comment, likes: comment.likes - 1 } : comment)))
-      setLikedComments(likedComments.filter((commentId) => commentId !== id))
+      updatedComments = comments.map((comment) => 
+        comment.id === id ? { ...comment, likes: comment.likes - 1 } : comment
+      );
+      const updatedLikedComments = likedComments.filter((commentId) => commentId !== id);
+      setComments(updatedComments);
+      setLikedComments(updatedLikedComments);
     } else {
       // Like
-      setComments(comments.map((comment) => (comment.id === id ? { ...comment, likes: comment.likes + 1 } : comment)))
-      setLikedComments([...likedComments, id])
+      updatedComments = comments.map((comment) => 
+        comment.id === id ? { ...comment, likes: comment.likes + 1 } : comment
+      );
+      const updatedLikedComments = [...likedComments, id];
+      setComments(updatedComments);
+      setLikedComments(updatedLikedComments);
+    }
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveCommentsToLocalStorage(updatedComments, commentReactions);
     }
   }
-
   const handleAddReaction = (commentId: number, emoji: string) => {
-    const currentReactions = commentReactions[commentId] || []
+    const currentReactions = commentReactions[commentId] || [];
+    let updatedReactions = { ...commentReactions };
+    
     if (currentReactions.includes(emoji)) {
-      setCommentReactions({
+      updatedReactions = {
         ...commentReactions,
         [commentId]: currentReactions.filter(e => e !== emoji)
-      })
+      };
     } else {
-      setCommentReactions({
+      updatedReactions = {
         ...commentReactions,
         [commentId]: [...currentReactions, emoji]
-      })
+      };
+    }
+    
+    setCommentReactions(updatedReactions);
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveCommentsToLocalStorage(comments, updatedReactions);
     }
   }
-
   const handleSendComment = () => {
-    if (!comment.trim()) return
+    if (!comment.trim()) return;
 
     const newComment = {
       id: comments.length + 1,
@@ -232,10 +371,16 @@ export default function PreviewPage() {
       content: comment,
       timestamp: "Just now",
       likes: 0,
-    }
+    };
 
-    setComments([...comments, newComment])
-    setComment("")
+    const updatedComments = [...comments, newComment];
+    setComments(updatedComments);
+    setComment("");
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveCommentsToLocalStorage(updatedComments, commentReactions);
+    }
   }
 
   const toggleMute = () => {
@@ -392,6 +537,76 @@ export default function PreviewPage() {
     }
   }
 
+  const handleAddMilestone = (newMilestone: any) => {
+    const updatedMilestones = [...milestones, {
+      ...newMilestone,
+      id: milestones.length + 1
+    }];
+    setMilestones(updatedMilestones);
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveTimelineToLocalStorage(updatedMilestones, futurePlans);
+    }
+  }
+
+  const handleEditMilestone = (id: number, updatedData: any) => {
+    const updatedMilestones = milestones.map(milestone => 
+      milestone.id === id ? { ...milestone, ...updatedData } : milestone
+    );
+    setMilestones(updatedMilestones);
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveTimelineToLocalStorage(updatedMilestones, futurePlans);
+    }
+  }
+
+  const handleDeleteMilestone = (id: number) => {
+    const updatedMilestones = milestones.filter(milestone => milestone.id !== id);
+    setMilestones(updatedMilestones);
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveTimelineToLocalStorage(updatedMilestones, futurePlans);
+    }
+  }
+
+  const handleAddFuturePlan = (newPlan: any) => {
+    const updatedPlans = [...futurePlans, {
+      ...newPlan,
+      id: futurePlans.length + 1
+    }];
+    setFuturePlans(updatedPlans);
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveTimelineToLocalStorage(milestones, updatedPlans);
+    }
+  }
+
+  const handleEditFuturePlan = (id: number, updatedData: any) => {
+    const updatedPlans = futurePlans.map(plan => 
+      plan.id === id ? { ...plan, ...updatedData } : plan
+    );
+    setFuturePlans(updatedPlans);
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveTimelineToLocalStorage(milestones, updatedPlans);
+    }
+  }
+
+  const handleDeleteFuturePlan = (id: number) => {
+    const updatedPlans = futurePlans.filter(plan => plan.id !== id);
+    setFuturePlans(updatedPlans);
+    
+    // Save to localStorage
+    if (localStorageAvailable) {
+      saveTimelineToLocalStorage(milestones, updatedPlans);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white overflow-hidden">
       {/* Style tag for custom animation */}
@@ -496,8 +711,7 @@ export default function PreviewPage() {
       {/* Mood transition effect */}
       <MoodTransition mood={mood} previousMood={previousMood ?? undefined} isActive={showMoodTransition} />
       
-      {/* Audio player */}
-      <AudioPlayer
+      {/* Audio player */}      <AudioPlayer
         src={currentMusic.src}
         autoPlay={true}
         loop={true}
@@ -507,9 +721,14 @@ export default function PreviewPage() {
         title={currentMusic.title}
         artist={currentMusic.artist}
       />
-
+      
       {/* Navigation bar */}
-      <div id="content-section" className="sticky top-0 z-40 w-full backdrop-blur-lg bg-slate-900/75 border-b border-white/5 shadow-lg">
+      <div 
+        ref={navbarRef}
+        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+          hasScrolled ? "backdrop-blur-sm bg-slate-900/30 border-b border-white/5 shadow-sm" : "bg-transparent"
+        }`}
+      >
         <div className="max-w-screen-2xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
           <Button variant="ghost" onClick={() => router.push("/create")} className="text-white hover:bg-white/10 rounded-full transition-all duration-200 flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -604,14 +823,19 @@ export default function PreviewPage() {
                   Dramatic
                 </Button>
               </PopoverContent>
-            </Popover>
-            
+            </Popover>            
             <ThemeToggle />
           </div>
-        </div>
-      </div>
+        </div>      </div>
 
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+      {/* Content wrapper with gradient transition */}
+      <div className="relative">
+        {/* Content section marker for scrolling */}
+        <div id="content-section" className="absolute top-0 h-4 w-full"></div>
+        
+        <div className="bg-gradient-to-b from-slate-900/20 to-transparent h-12 w-full"></div>
+        
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 mb-12 w-full max-w-md mx-auto glass-morphism rounded-full overflow-hidden p-1 border border-white/10 shadow-lg">
             <TabsTrigger 
@@ -744,9 +968,7 @@ export default function PreviewPage() {
                                     : "text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500"
                         }`}>
                           {exitPageData?.title || "My Dramatic Exit: The Final Curtain Call"}
-                        </h1>
-
-                        <div className="prose prose-invert max-w-none mb-10">
+                        </h1>                        <div className="prose prose-invert max-w-none mb-10">
                           {exitPageData?.message ? (
                             // Render user's message if available
                             exitPageData.message.split("\n\n").map((paragraph, index) => (
@@ -967,31 +1189,30 @@ export default function PreviewPage() {
                             </motion.div>
                           ))}
                         </AnimatePresence>
-                      </div>
-
-                      <div className="pt-3 border-t border-white/10">
+                      </div>                      <div className="pt-3 border-t border-white/10">
                         <div className="flex gap-2 items-center">
-                          <Avatar className="h-8 w-8">
+                          <Avatar className="h-8 w-8 flex-shrink-0">
                             <AvatarImage src="/placeholder.svg" />
                             <AvatarFallback className="bg-gradient-to-br from-violet-500 to-purple-500">Y</AvatarFallback>
                           </Avatar>
-                          <div className="relative flex-1">
-                            <Input
-                              value={comment}
-                              onChange={(e) => setComment(e.target.value)}
-                              placeholder="Add a comment..."
-                              className="pr-20 bg-white/5 border-white/10 focus:border-white/20 rounded-full"
-                            />
-                            {comment.trim() && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 px-2 py-1 rounded-full bg-indigo-500/80 hover:bg-indigo-500 text-white"
-                                onClick={handleSendComment}
-                              >
-                                <Send className="h-3 w-3" />
-                              </Button>
-                            )}
+                          <div className="flex flex-1 items-center overflow-hidden">
+                            <div className="relative flex-1">
+                              <Input
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                placeholder="Add a comment..."
+                                className="pr-4 bg-white/5 border-white/10 focus:border-white/20 rounded-full"
+                              />
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="ml-2 h-7 px-2 py-1 rounded-full bg-indigo-500/80 hover:bg-indigo-500 text-white flex-shrink-0"
+                              onClick={handleSendComment}
+                              disabled={!comment.trim()}
+                            >
+                              <Send className="h-3 w-3" />
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -1009,8 +1230,41 @@ export default function PreviewPage() {
                   <Clock className="mr-2 h-5 w-5 text-indigo-400" />
                   My Journey
                 </h2>
-                <div className="bg-white/5 backdrop-blur-md rounded-full px-4 py-1.5 text-sm font-medium border border-white/10">
-                  2020 - 2024
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/5 backdrop-blur-md rounded-full px-4 py-1.5 text-sm font-medium border border-white/10">
+                    2020 - 2024
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-indigo-400/30 hover:bg-indigo-500/20 text-indigo-300"
+                    onClick={() => {
+                      const title = prompt("Enter milestone title:");
+                      const description = prompt("Enter milestone description:");
+                      const date = prompt("Enter milestone date (e.g., June 2023):");
+                      const iconOption = prompt("Choose icon (1: Briefcase, 2: Star, 3: Award, 4: Users):", "1");
+                      
+                      if (title && description && date) {
+                        let icon;
+                        switch(iconOption) {
+                          case "2": icon = <Star className="h-5 w-5 text-yellow-400" />; break;
+                          case "3": icon = <Award className="h-5 w-5 text-emerald-400" />; break;
+                          case "4": icon = <Users className="h-5 w-5 text-blue-400" />; break;
+                          default: icon = <Briefcase className="h-5 w-5 text-indigo-400" />; break;
+                        }
+                        
+                        handleAddMilestone({
+                          title,
+                          description,
+                          date,
+                          icon
+                        });
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Milestone
+                  </Button>
                 </div>
               </div>
               
@@ -1037,15 +1291,53 @@ export default function PreviewPage() {
                             {milestone.icon}
                           </div>
                         </div>
-                        
-                        <div className={`md:w-1/2 ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12 md:ml-auto'}`}>
-                          <div className="bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-6 shadow-xl transition-all duration-300 hover:shadow-indigo-500/10 hover:scale-[1.02] group h-full">
+                          <div className={`md:w-1/2 ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12 md:ml-auto'}`}>
+                          <div className="bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-6 shadow-xl transition-all duration-300 hover:shadow-indigo-500/10 hover:scale-[1.02] group h-full relative">
                             <div className="flex md:hidden items-center gap-3 mb-3">
                               <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center shadow-md">
                                 {milestone.icon}
                               </div>
                               <p className="text-xs font-semibold text-indigo-300">{milestone.date}</p>
                             </div>
+                            
+                            {/* Edit/Delete controls */}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7 rounded-full hover:bg-white/20"
+                                onClick={() => {
+                                  // In a real app, this would open an edit modal
+                                  // For simplicity, we'll use a prompt
+                                  const newTitle = prompt("Edit milestone title:", milestone.title);
+                                  const newDesc = prompt("Edit milestone description:", milestone.description);
+                                  const newDate = prompt("Edit milestone date:", milestone.date);
+                                  
+                                  if (newTitle || newDesc || newDate) {
+                                    handleEditMilestone(milestone.id, {
+                                      title: newTitle || milestone.title,
+                                      description: newDesc || milestone.description,
+                                      date: newDate || milestone.date
+                                    });
+                                  }
+                                }}
+                              >
+                                <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7 rounded-full hover:bg-white/20"
+                                onClick={() => {
+                                  if (confirm("Are you sure you want to delete this milestone?")) {
+                                    handleDeleteMilestone(milestone.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 text-gray-400" />
+                              </Button>
+                            </div>
+                            
                             <p className="hidden md:block text-sm font-semibold text-indigo-300 mb-2">{milestone.date}</p>
                             <h3 className="text-xl font-bold mb-2 group-hover:text-white transition-colors duration-300">{milestone.title}</h3>
                             <p className="text-gray-300">{milestone.description}</p>
@@ -1122,8 +1414,29 @@ export default function PreviewPage() {
                   <ArrowRight className="mr-2 h-5 w-5 text-indigo-400" />
                   What's Next For Me
                 </h2>
-                <div className="bg-white/5 backdrop-blur-md rounded-full px-4 py-1.5 text-sm font-medium border border-white/10">
-                  Future Plans
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/5 backdrop-blur-md rounded-full px-4 py-1.5 text-sm font-medium border border-white/10">
+                    Future Plans
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full border-indigo-400/30 hover:bg-indigo-500/20 text-indigo-300"
+                    onClick={() => {
+                      const title = prompt("Enter plan title:");
+                      const description = prompt("Enter plan description:");
+                      
+                      if (title && description) {
+                        handleAddFuturePlan({
+                          title,
+                          description
+                        });
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Plan
+                  </Button>
                 </div>
               </div>
               
@@ -1148,6 +1461,41 @@ export default function PreviewPage() {
                           ) : (
                             <Users className="h-6 w-6 text-white" />
                           )}
+                        </div>
+                        {/* Edit/Delete controls for future plans */}
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1 z-10">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const newTitle = prompt("Edit plan title:", plan.title);
+                              const newDesc = prompt("Edit plan description:", plan.description);
+                              
+                              if (newTitle || newDesc) {
+                                handleEditFuturePlan(plan.id, {
+                                  title: newTitle || plan.title,
+                                  description: newDesc || plan.description
+                                });
+                              }
+                            }}
+                          >
+                            <Pencil className="h-3.5 w-3.5 text-white" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm("Are you sure you want to delete this plan?")) {
+                                handleDeleteFuturePlan(plan.id);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-white" />
+                          </Button>
                         </div>
                         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-900 to-transparent"></div>
                       </div>
@@ -1205,6 +1553,7 @@ export default function PreviewPage() {
           </TabsContent>
         </Tabs>
       </div>
+    </div>
     </div>
   )
 }
