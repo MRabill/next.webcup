@@ -249,15 +249,15 @@ export default function LandingPage() {
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        className="relative h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 text-white"
+        className="relative h-screen w-screen overflow-hidden bg-gradient-to-b from-black to-slate-950 text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
         <ConstellationBackground
-          dotColor="rgba(255, 255, 255, 0.6)"
-          lineColor="rgba(255, 255, 255, 0.1)"
+          dotColor="rgba(255, 255, 255, 0.8)"
+          lineColor="rgba(255, 255, 255, 0.2)"
           dotCount={380}
           className="z-0"
         />

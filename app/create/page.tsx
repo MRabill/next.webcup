@@ -157,12 +157,12 @@ export default function CreatePage() {
 
   return (
     <div
-      className={`min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white relative overflow-hidden`}
+      className={`min-h-screen bg-gradient-to-b from-black to-slate-950 text-white relative overflow-hidden`}
     >
       {/* Constellation background */}
       <ConstellationBackground
-        dotColor="rgba(255, 255, 255, 0.6)"
-        lineColor="rgba(255, 255, 255, 0.1)"
+        dotColor="rgba(255, 255, 255, 0.8)"
+        lineColor="rgba(255, 255, 255, 0.2)"
         dotCount={380}
         className="z-0"
         mood={formData.mood}

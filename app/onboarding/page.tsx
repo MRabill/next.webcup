@@ -206,11 +206,11 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white p-4 overflow-hidden relative">
+    <div className="min-h-screen bg-gradient-to-b from-black to-slate-950 text-white p-4 overflow-hidden relative">
       {/* Dynamic Background Effects */}
       <ConstellationBackground
-        dotColor="rgba(255, 255, 255, 0.6)"
-        lineColor="rgba(255, 255, 255, 0.1)"
+        dotColor="rgba(255, 255, 255, 0.8)"
+        lineColor="rgba(255, 255, 255, 0.2)"
         dotCount={380}
         className="z-0"
         mood={mood}
