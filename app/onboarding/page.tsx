@@ -89,8 +89,6 @@ export default function OnboardingPage() {
           break
         case "grateful":
           setMood("calm")
-          break       
-          setMood("heartfelt")
           break
         default:
           setMood("default")
@@ -103,7 +101,7 @@ export default function OnboardingPage() {
     const timer = setTimeout(() => {
       setAnimationComplete(true)
     }, 3000) // Reduced duration for better user experience
-    
+
     return () => clearTimeout(timer)
   }, [])
 
@@ -111,30 +109,30 @@ export default function OnboardingPage() {
   useEffect(() => {
     const savedUsername = localStorage.getItem('endpage_username')
     const savedEmail = localStorage.getItem('endpage_email')
-    
+
     if (savedUsername && savedEmail) {
       setUsername(savedUsername)
       setEmail(savedEmail)
     }
   }, [])
-  
+
   const nextStep = () => {
     // Save user info to localStorage when proceeding from first step
     if (currentStep === 0) {
       if (!username || !email) return;
-      
+
       localStorage.setItem('endpage_username', username)
       localStorage.setItem('endpage_email', email)
-      
+
       // Also save selected mood if user has already chosen one
       if (selectedTone) {
         localStorage.setItem('endpage_tone', selectedTone)
       }
-      
+
       if (situation) {
         localStorage.setItem('endpage_situation', situation)
       }
-      
+
       // Redirect directly to create page with user information
       router.push('/create')
       return
@@ -143,13 +141,13 @@ export default function OnboardingPage() {
     if (currentStep === 0 && (!username || !email)) return
     if (currentStep === 1 && !situation) return
     if (currentStep === 2 && !selectedTone) return
-      if (currentStep < 2) {
+    if (currentStep < 2) {
       setCurrentStep(prev => prev + 1)
     } else {
       handleSubmit()
     }
   }
-  
+
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1)
@@ -195,21 +193,21 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white p-4 overflow-hidden relative">
       {/* Dynamic Background Effects */}
-      <ConstellationBackground 
-        dotColor="rgba(255, 255, 255, 0.6)" 
+      <ConstellationBackground
+        dotColor="rgba(255, 255, 255, 0.6)"
         lineColor="rgba(255, 255, 255, 0.1)"
         dotCount={100}
         className="z-0"
       />
-      <EnhancedParticles 
-        mood={mood} 
-        intensity="medium" 
-        className="z-0" 
+      <EnhancedParticles
+        mood={mood}
+        intensity="medium"
+        className="z-0"
       />
-        {/* Cinematic Intro Animation */}
+      {/* Cinematic Intro Animation */}
       <AnimatePresence>
         {!animationComplete && (
-          <motion.div 
+          <motion.div
             className="absolute inset-0 flex flex-col items-center justify-center z-50 bg-black overflow-hidden"
             initial={{ opacity: 1 }}
             animate={{ opacity: 1 }}
@@ -217,21 +215,21 @@ export default function OnboardingPage() {
             transition={{ duration: 1.0, delay: 2.0 }}
           >
             {/* Skip button */}
-            <button 
+            <button
               onClick={() => setAnimationComplete(true)}
               className="absolute top-4 right-4 px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-sm text-white/70 hover:text-white transition-colors"
             >
               Skip
             </button>
-              {/* Movie-like dramatic line */}
-            <motion.div 
+            {/* Movie-like dramatic line */}
+            <motion.div
               className="h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent"
               initial={{ width: 0 }}
               animate={{ width: "80%" }}
               transition={{ duration: 0.7, ease: "easeInOut" }}
             />
-              {/* Main title with typewriter effect */}
-            <motion.h1 
+            {/* Main title with typewriter effect */}
+            <motion.h1
               className="mt-6 text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -239,7 +237,7 @@ export default function OnboardingPage() {
             >
               Welcome to Your End Page
             </motion.h1>
-              {/* Tagline with fade-in */}
+            {/* Tagline with fade-in */}
             <motion.p
               className="text-xl text-gray-300 mt-4 max-w-lg text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -248,7 +246,7 @@ export default function OnboardingPage() {
             >
               Create memorable departure messages with style, emotion, and impact
             </motion.p>
-              {/* Emotion icons that fly in from different directions */}
+            {/* Emotion icons that fly in from different directions */}
             <motion.div className="flex gap-8 mt-8">
               {[
                 { icon: "💔", delay: 1.3, x: -100 },
@@ -260,20 +258,20 @@ export default function OnboardingPage() {
                 <motion.div
                   key={index}
                   className="text-4xl"
-                  initial={{ 
-                    opacity: 0, 
-                    x: item.x || 0, 
+                  initial={{
+                    opacity: 0,
+                    x: item.x || 0,
                     y: item.y || 0,
                     scale: 0.5
                   }}
-                  animate={{ 
-                    opacity: 1, 
-                    x: 0, 
+                  animate={{
+                    opacity: 1,
+                    x: 0,
                     y: 0,
                     scale: 1
                   }}
-                  transition={{ 
-                    duration: 0.8, 
+                  transition={{
+                    duration: 0.8,
                     delay: item.delay,
                     type: "spring",
                     stiffness: 200
@@ -283,8 +281,8 @@ export default function OnboardingPage() {
                 </motion.div>
               ))}
             </motion.div>
-              {/* Bottom dramatic line */}
-            <motion.div 
+            {/* Bottom dramatic line */}
+            <motion.div
               className="h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent mt-8"
               initial={{ width: 0 }}
               animate={{ width: "80%" }}
@@ -295,9 +293,9 @@ export default function OnboardingPage() {
       </AnimatePresence>
 
       <div className="container mx-auto max-w-4xl py-10 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-5xl font-bold mb-2 text-center bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
@@ -320,230 +318,83 @@ export default function OnboardingPage() {
                 transition={{ duration: 0.4 }}
                 className="grid grid-cols-1 gap-8"
               >
-                <Card className="bg-white/10 backdrop-blur-lg border-none text-white shadow-xl">
-                  <CardHeader>
-                    <CardTitle className="text-2xl flex items-center">
-                      <User className="mr-2 h-6 w-6 text-purple-400" />
-                      <span>Who are you?</span>
-                    </CardTitle>
-                    <CardDescription className="text-gray-300 text-base">Tell us a bit about yourself</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="space-y-2"
-                      >
-                        <Label htmlFor="username" className="text-lg">Username</Label>
-                        <Input
-                          id="username"
-                          placeholder="Enter your username"
-                          className="bg-white/5 border-white/20 text-white text-lg h-12"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                        />
-                      </motion.div>
-                      
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="space-y-2"
-                      >
-                        <Label htmlFor="email" className="text-lg">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="Enter your email"
-                          className="bg-white/5 border-white/20 text-white text-lg h-12"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </motion.div>
-                    </div>
-                  </CardContent>                  <CardFooter>                    <Button
-                      onClick={nextStep}
-                      disabled={!username || !email}
-                      className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 h-12 text-lg"
-                    >
-                      <span>Go to Create Page</span>
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            )}
+                <div className="flex justify-center">
+                  <Card className="w-full max-w-md bg-white/10 backdrop-blur-lg border-none text-white shadow-xl">
 
-            {currentStep === 1 && (
-              <motion.div
-                key="step-2"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 50 }}
-                transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 gap-8"
-              >
-                <Card className="bg-white/10 backdrop-blur-lg border-none text-white shadow-xl">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">What are you leaving?</CardTitle>
-                    <CardDescription className="text-gray-300 text-base">Tell us about your situation</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                      >
-                        <Label htmlFor="situation" className="text-lg">Describe your departure</Label>
-                        <Textarea
-                          id="situation"
-                          placeholder="E.g., Leaving my job after 5 years, Breaking up with my partner..."
-                          className="bg-white/5 border-white/20 text-white text-lg min-h-[150px]"
-                          value={situation}
-                          onChange={(e) => setSituation(e.target.value)}
-                        />
-                      </motion.div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button
-                      onClick={prevStep}
-                      variant="outline"
-                      className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                    >
-                      <ArrowLeft className="mr-2 h-5 w-5" />
-                      <span>Back</span>
-                    </Button>
-                    <Button
-                      onClick={nextStep}
-                      disabled={!situation}
-                      className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600"
-                    >
-                      <span>Continue</span>
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            )}
-
-            {currentStep === 2 && (
-              <motion.div
-                key="step-3"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 50 }}
-                transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-8"
-              >
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <Card className="bg-white/10 backdrop-blur-lg border-none text-white h-full shadow-xl">
                     <CardHeader>
-                      <CardTitle className="text-2xl">Choose your tone</CardTitle>
-                      <CardDescription className="text-gray-300 text-base">How do you want to express yourself?</CardDescription>
+                      <CardTitle className="text-2xl flex items-center">
+                        <User className="mr-2 h-6 w-6 text-purple-400" />
+                        <span>Who are you?</span>
+                      </CardTitle>
+                      <CardDescription className="text-gray-300 text-base">Tell us a bit about yourself</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <RadioGroup
-                          value={selectedTone || ""}
-                          onValueChange={setSelectedTone}
-                          className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2"
+                      <div className="space-y-6">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="space-y-2"
                         >
-                          {emotionTones.map((tone, index) => {
-                            const Icon = getIconForTone(tone.id)
-                            return (
-                              <motion.div 
-                                key={tone.id} 
-                                className="relative"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 * index }}
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.98 }}
-                              >
-                                <RadioGroupItem value={tone.id} id={tone.id} className="peer sr-only" />
-                                <Label
-                                  htmlFor={tone.id}
-                                  className={`flex items-center gap-2 p-3 rounded-md border border-white/20 cursor-pointer hover:bg-white/10 transition-all peer-data-[state=checked]:border-2 peer-data-[state=checked]:shadow-lg peer-data-[state=checked]:border-${tone.color.split("-")[1]}-500`}
-                                >
-                                  <div className={`${tone.color} p-2 rounded-md`}>
-                                    <Icon size={16} />
-                                  </div>
-                                  <div>
-                                    <p className="font-medium">{tone.name}</p>
-                                    <p className="text-xs text-gray-300">{tone.description}</p>
-                                  </div>
-                                </Label>
-                              </motion.div>
-                            )
-                          })}
-                        </RadioGroup>
+                          <Label htmlFor="username" className="text-lg">Username</Label>
+                          <Input
+                            id="username"
+                            placeholder="Enter your username"
+                            className="bg-white/5 border-white/20 text-white text-lg h-12"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                          />
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 }}
+                          className="space-y-2"
+                        >
+                          <Label htmlFor="email" className="text-lg">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="Enter your email"
+                            className="bg-white/5 border-white/20 text-white text-lg h-12"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                          />
+                        </motion.div>
                       </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
+                    </CardContent>                  <CardFooter className="flex justify-center">
                       <Button
-                        onClick={prevStep}
-                        variant="outline"
-                        className="bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                        onClick={nextStep}
+                        disabled={!username || !email}
+                        className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 h-12 text-lg"
                       >
-                        <ArrowLeft className="mr-2 h-5 w-5" />
-                        <span>Back</span>
-                      </Button>
-                      <Button
-                        onClick={handleSubmit}
-                        disabled={!selectedTone || loading}
-                        className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600"
-                      >
-                        {loading ? (
-                          <span className="flex items-center">
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Processing...
-                          </span>
-                        ) : (
-                          <span>Generate My End Page</span>
-                        )}
+                        <span>Go to Create Page</span>
+                        <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
                     </CardFooter>
-                  </Card>
-                </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                >
-                  <TonePreview selectedTone={selectedTone} tones={emotionTones} />
-                </motion.div>
+                  </Card>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
         {/* Progress Indicators */}
-        <motion.div 
+        <motion.div
           className="flex justify-center mt-10 gap-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
         >
-          {[0, 1, 2].map((step) => (
+          {[0].map((step) => (
             <motion.div
               key={step}
-              className={`h-3 w-3 rounded-full ${
-                currentStep === step 
-                  ? "bg-gradient-to-r from-pink-500 to-purple-500" 
-                  : "bg-white/30"
-              }`}
+              className={`h-3 w-3 rounded-full ${currentStep === step
+                ? "bg-gradient-to-r from-pink-500 to-purple-500"
+                : "bg-white/30"
+                }`}
               animate={{
                 scale: currentStep === step ? [1, 1.2, 1] : 1,
                 transition: {
