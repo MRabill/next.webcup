@@ -8,6 +8,7 @@ import { Sparkles, Flame, Heart, Frown, Cloud, Bot, Laugh, ArrowRight, PartyPopp
 import { cn } from "@/lib/utils"
 import { FeatureCard } from "@/components/feature-card"
 import { BackgroundAnimation } from "@/components/background-animation"
+import AudioPlayer from "@/components/ui/audio-player"
 
 // Typing effect hook (returns [displayed, done])
 function useTypingEffect(text: string, speed: number, resetKey: any) {
@@ -266,6 +267,33 @@ export default function LandingPage() {
         transition={{ duration: 0.5 }}
       >
         <BackgroundAnimation />
+
+        {/* Mini Audio Player with Now Playing Text */}
+        <div className="fixed bottom-4 right-4 z-20 flex items-center gap-3">
+          <motion.div 
+            className="bg-black/40 backdrop-blur-sm rounded-full px-4 py-1.5 shadow-lg"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="flex items-center"
+            >
+              <span className="text-xs text-white/90 mr-2">Now Playing:</span>
+              <span className="text-sm font-medium text-white">Adele - Skyfall</span>
+            </motion.div>
+          </motion.div>
+          <AudioPlayer 
+            src="/sounds/thisIsTheEnd.mp3" 
+            autoPlay={true} 
+            loop={true}
+            volume={0.3}
+            className="w-auto"
+          />
+        </div>
 
         {/* Easter Egg Hidden Spot */}
         <button
