@@ -2,7 +2,7 @@ name: Deploy Next.js to cPanel
 
 on:
   push:
-    branches: [main] # or your deploy branch
+    branches: [main]
 
 jobs:
   deploy:
@@ -15,17 +15,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18 # match your project
+          node-version: 18
 
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Build Next.js app
+      - name: Build static Next.js app
         run: npm run build
-
-      - name: Export static site (if using static export)
-        run: npm run export
-        # Output will be in out/ folder
 
       - name: Upload via FTP to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
