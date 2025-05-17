@@ -220,6 +220,14 @@ export default function LandingPage() {
     }, 1000)
   }
 
+  const handleGalleryClick = () => {
+    console.log("Gallery button clicked");
+
+    setIsExiting(true)
+    setTimeout(() => {
+      router.push("/gallery")
+    }, 1000)
+  }
   // Keep track of expanded card to pause the rotation
   const [expandedCardIndex, setExpandedCardIndex] = useState<number | null>(null)
 
@@ -300,11 +308,11 @@ export default function LandingPage() {
             </h1>
           </div>
           <Button
-            onClick={handleExitClick}
+            onClick={handleGalleryClick}
             className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
             size="lg"
           >
-            Exit With Style <ArrowRight className="ml-2 h-4 w-4" />
+            Gallery <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </header>
 

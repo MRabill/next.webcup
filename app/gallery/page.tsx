@@ -5,9 +5,11 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { Search, Eye, Heart } from "lucide-react"
 import ConstellationBackground from "@/components/effects/constellation-background"
 import { ThemeToggle } from "@/components/theme-toggle"
+import GalleryCard from "@/components/gallery/gallery-card"
+import EnhancedParticles from "@/components/effects/enhanced-particles"
 
 export default function GalleryPage() {
   const [activeTab, setActiveTab] = useState("trending")
@@ -125,48 +127,143 @@ export default function GalleryPage() {
       page.author.name.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
+  // Sort pages based on active tab
+  const sortedPages = [...filteredPages].sort((a, b) => {
+    if (activeTab === "trending") {
+      return b.views - a.views
+    } else if (activeTab === "recent") {
+      // Simple mock sorting by date (in a real app, this would use actual date objects)
+      return a.date.includes("day") && b.date.includes("day")
+        ? Number.parseInt(a.date) - Number.parseInt(b.date)
+        : a.date.includes("week")
+          ? 1
+          : -1
+    }
+    return 0
+  })
+
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white relative">
+      {/* Background */}
+      <ConstellationBackground className="z-0" />
+      <EnhancedParticles mood="default" intensity="low" className="z-0" />
 
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <div>
+              <h1 className="text-3xl font-bold">Exit Page Gallery</h1>
+              <p className="text-slate-600 dark:text-gray-300">Browse memorable departures from the community</p>
+            </div>
+            <div className="md:hidden">
+              <ThemeToggle />
+            </div>
+          </div>
+          <div className="flex gap-4 items-center w-full md:w-auto">
+            <div className="relative flex-1 md:flex-none">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search exit pages..."
+                className="pl-10 bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-white/20 text-slate-900 dark:text-white w-full md:w-[250px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="hidden md:block">
+              <ThemeToggle />
+            </div>
+            <Link href="/create">
+              <Button>Create Your Exit</Button>
+            </Link>
+          </div>
+        </div>
+
+        <Tabs defaultValue="trending" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-3 bg-white/20 dark:bg-white/10 rounded-lg mb-8 w-full md:w-[300px]">
+            <TabsTrigger
+              value="trending"
+              className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20"
+            >
+              Trending
+            </TabsTrigger>
+            <TabsTrigger
+              value="recent"
+              className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20"
+            >
+              Recent
+            </TabsTrigger>
+            <TabsTrigger
+              value="popular"
+              className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20"
+            >
+              Popular
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedPages.length > 0 ? (
+              sortedPages.map((page) => <GalleryCard key={page.id} page={page} />)
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <h3 className="text-xl font-medium mb-2">No exit pages found</h3>
+                <p className="text-slate-500 dark:text-gray-400 mb-6">
+                  {searchTerm ? `No results found for "${searchTerm}"` : "There are no exit pages in this category yet"}
+                </p>
+                <Link href="/create">
+                  <Button>Create Your Own Exit Page</Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </Tabs>
+
+        {/* Featured section */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold mb-6">Featured Exit Pages</h2>
+          <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 p-6 rounded-xl backdrop-blur-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+              <div>
+                <h3 className="text-xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
+                  Create Your Own Memorable Exit
+                </h3>
+                <p className="text-slate-700 dark:text-gray-300 mb-4">
+                  Ready to make your grand exit? Create a customized departure page with style, rage, GIFs, tears,
+                  sounds, and regrets (or not).
+                </p>
+                <Link href="/create">
+                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                    Start Creating Now
+                  </Button>
+                </Link>
+              </div>
+              <div className="hidden md:block">
+                <div className="grid grid-cols-2 gap-4">
+                  {exitPages.slice(0, 4).map((page, index) => (
+                    <div key={index} className="bg-white/20 dark:bg-white/10 p-3 rounded-lg">
+                      <p className="font-medium text-sm truncate">{page.title}</p>
+                      <div className="flex items-center mt-1 text-xs text-slate-500 dark:text-gray-400">
+                        <span className="flex items-center">
+                          <Eye className="h-3 w-3 mr-1" />
+                          {page.views}
+                        </span>
+                        <span className="flex items-center ml-2">
+                          <Heart className="h-3 w-3 mr-1" />
+                          {page.likes}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-16 text-center text-slate-500 dark:text-gray-400 py-6 border-t border-slate-200 dark:border-slate-700">
+          <p>© 2025 theend.page — Your grand exit, your way.</p>
+        </footer>
+      </div>
     </div>
-  )};
-    // <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white relative">
-    //   {/* Background */}
-    //   <ConstellationBackground className="z-0" />
-      
-    //   <div className="container mx-auto px-4 py-8 relative z-10">
-    //     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-    //       <div className="flex items-center justify-between w-full md:w-auto">
-    //         <div>
-    //           <h1 className="text-3xl font-bold">Exit Page Gallery</h1>
-    //           <p className="text-slate-600 dark:text-gray-300">Browse memorable departures from the community</p>
-    //         </div>
-    //         <div className="md:hidden">
-    //           <ThemeToggle />
-    //         </div>
-    //       </div>
-    //       <div className="flex gap-4 items-center w-full md:w-auto">
-    //         <div className="relative flex-1 md:flex-none">
-    //           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-gray-400 h-4 w-4" />
-    //           <Input
-    //             placeholder="Search exit pages..."
-    //             className="pl-10 bg-white/80 dark:bg-slate-800/80 border-slate-300 dark:border-white/20 text-slate-900 dark:text-white w-full md:w-[250px]"
-    //             value={searchTerm}
-    //             onChange={(e) => setSearchTerm(e.target.value)}
-    //           />
-    //         </div>
-    //         <div className="hidden md:block">
-    //           <ThemeToggle />
-    //         </div>
-    //         <Link href="/create">
-    //           <Button>Create Your Exit</Button>
-    //         </Link>
-    //       </div>
-    //     </div>
-
-    //     <Tabs defaultValue="trending" value={activeTab} onValueChange={setActiveTab} className="w-full">
-    //       <TabsList className="grid grid-cols-3 bg-white/20 dark:bg-white/10 rounded-lg mb-8 w-full md:w-[300px]">
-    //         <TabsTrigger value="trending" className="data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/20">
-    //           Trending
-    //         </TabsTrigger>
-    //         <TabsTrigger value="recent" className="data-[state=active]:bg-white/40 dark:data-[state=active\
+  )
+}
