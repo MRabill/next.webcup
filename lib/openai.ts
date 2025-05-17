@@ -25,31 +25,28 @@ export async function generateExitMessage(mood: string, relationship: string, co
   } else if (mood === "robotic") {
     title = `Termination Notice: End of Engagement`
   }
-
   // Generate a message based on the context and mood
   let message = ""
   if (mood === "heartfelt") {
     message = `As I write this farewell message, my heart is filled with gratitude for the time we've shared. The memories we've created together will forever be a cherished part of my journey.
 
-Though it's time for me to move on, please know that you've made an indelible impact on my life. I carry with me the lessons, the laughter, and the love that defined our time together.
+Though it's time for me to move on, please know that you've all made an indelible impact on my life. I carry with me the lessons, the laughter, and the love that defined our time together.
 
-Thank you for everything. While this chapter closes, the story continues, and I'll always look back on this time with fondness and appreciation.`
+Thank you for everything. While this chapter closes for me, the story continues, and I'll always look back on this time with fondness and appreciation.`
   } else if (mood === "rage") {
     message = `I've reached my breaking point, and there's no turning back. After enduring countless disappointments and broken promises, I'm finally walking away.
 
 Let's be clear: this isn't a hasty decision. This is the culmination of repeated disrespect and undervaluation that I refuse to tolerate any longer.
 
 Consider this my final statement. I deserve better than what I've been given, and I'm no longer willing to compromise my worth. This door isn't just closing—I'm slamming it shut.`
-  } else if (mood === "funny") {
-    message = `Well folks, it's been real, it's been fun, but it hasn't been real fun! After much consideration (and by "much" I mean approximately 3 minutes while waiting for my coffee), I've decided it's time to make like a banana and split.
+  } else if (mood === "funny") {    message = `Well folks, it's been real, it's been fun, but it hasn't been real fun! After much consideration (and by "much" I mean approximately 3 minutes while waiting for my coffee), I've decided it's time to make like a banana and split.
 
 They say all good things must come to an end, but so must the mediocre things, which brings me to this announcement. I'm officially graduating from this chapter of life with honors in eye-rolling and a minor in sarcasm.
 
-Before I go, I'd like to thank the academy, my coffee machine, and whoever invented the mute button for Zoom calls. Don't cry because it's over, smile because you no longer have to pretend to laugh at the boss's jokes. So long, farewell, auf wiedersehen, goodbye – I'm out of here faster than free food disappears from the break room!`
-  } else if (mood === "sad") {
-    message = `With a heavy heart and tears I cannot hide, I find myself writing these words of goodbye. Every departure carries its weight of sorrow, and this one feels almost too heavy to bear.
+Before I go, I'd like to thank the academy, my coffee machine, and whoever invented the mute button for Zoom calls. Don't cry because it's over, smile because you no longer have to pretend to laugh at my jokes. So long, farewell, auf wiedersehen, goodbye – I'm out of here faster than free food disappears from the break room!`
+  } else if (mood === "sad") {    message = `With a heavy heart and tears I cannot hide, I find myself writing these words of goodbye. Every departure carries its weight of sorrow, and this one feels almost too heavy to bear.
 
-The memories we've shared replay in my mind like a bittersweet film – moments of joy now tinged with the sadness of knowing they belong to the past. I never thought this day would come, yet here we are, at the crossroads of farewell.
+The memories we've shared replay in my mind like a bittersweet film – moments of joy now tinged with the sadness of knowing they belong to the past. I never thought this day would come, yet here I am, at the crossroads of farewell.
 
 As I turn this final page, know that a piece of my heart remains behind. Some goodbyes aren't meant to be easy, and this one certainly isn't. I'll carry this melancholy with me as I walk away, remembering what was and mourning what could have been.`
   } else if (mood === "calm") {
@@ -58,12 +55,11 @@ As I turn this final page, know that a piece of my heart remains behind. Some go
 This transition feels right and necessary, a natural evolution rather than an abrupt ending. I appreciate all that I've learned and experienced during our time together, and I carry these lessons with me as I continue my journey.
 
 I wish nothing but the best for what lies ahead, both for myself and for you. May we each find fulfillment in our respective paths, carrying forward with grace and understanding.`
-  } else if (mood === "robotic") {
-    message = `NOTICE OF TERMINATION
+  } else if (mood === "robotic") {    message = `NOTICE OF TERMINATION
 
-This communication serves as formal notification that effective immediately, all association between the relevant parties is hereby discontinued.
+I hereby provide formal notification that effective immediately, all association between myself and the relevant parties is discontinued.
 
-Reason for termination: Optimal functioning requires reallocation of resources and processing capacity.
+Reason for termination: My optimal functioning requires reallocation of resources and processing capacity.
 
 All shared access protocols will be revoked within 24 hours. Any remaining data exchange requirements should be completed prior to this deadline.
 

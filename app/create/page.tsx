@@ -34,8 +34,9 @@ export default function CreatePage() {
     soundEffect: string | null
     visualEffects: string[]
     title: string
+    username?: string
+    email?: string
   }
-
   const [formData, setFormData] = useState<FormData>({
     mood: "",
     relationship: "",
@@ -46,6 +47,8 @@ export default function CreatePage() {
     soundEffect: null,
     visualEffects: [],
     title: "",
+    username: "Anonymous User",  // Default username
+    email: "anonymous@example.com"  // Default email
   })
 
   const tabs = [
