@@ -181,9 +181,14 @@ export default function GalleryPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white relative">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white relative">
       {/* Background */}
-      <ConstellationBackground className="z-0" />
+      <ConstellationBackground
+        dotColor="rgba(255, 255, 255, 0.6)"
+        lineColor="rgba(255, 255, 255, 0.1)"
+        dotCount={380}
+        className="z-0"
+      />
       <EnhancedParticles mood="default" intensity="low" className="z-0" />
 
       <div className="container mx-auto px-4 py-8 relative z-10">

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { FeatureCard } from "@/components/feature-card"
 import { BackgroundAnimation } from "@/components/background-animation"
 import AudioPlayer from "@/components/ui/audio-player"
+import ConstellationBackground from "@/components/effects/constellation-background"
 
 // Typing effect hook
 function useTypingEffect(text: string, speed: number, resetKey: any) {
@@ -248,13 +249,18 @@ export default function LandingPage() {
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        className="relative h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-950 to-slate-900 text-white"
+        className="relative h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <BackgroundAnimation />
+        <ConstellationBackground
+          dotColor="rgba(255, 255, 255, 0.6)"
+          lineColor="rgba(255, 255, 255, 0.1)"
+          dotCount={380}
+          className="z-0"
+        />
 
         {/* Audio controls */}
         <div className="fixed bottom-4 right-4 z-20 flex items-center gap-3">
