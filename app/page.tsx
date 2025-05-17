@@ -9,13 +9,6 @@ import { cn } from "@/lib/utils"
 import { FeatureCard } from "@/components/feature-card"
 import { BackgroundAnimation } from "@/components/background-animation"
 import AudioPlayer from "@/components/ui/audio-player"
-// import localFont from 'next/font/local'
-
-// // Load custom font - replace with your actual font file
-// const myFont = localFont({ 
-//   src: '../fonts/YourFontName.woff2',
-//   display: 'swap'
-// })
 
 // Typing effect hook
 function useTypingEffect(text: string, speed: number, resetKey: any) {
@@ -55,27 +48,37 @@ const useIsMobile = () => {
   return isMobile
 }
 
-// Faster floating animation component
+// Faster floating animation with more energy
 const FloatingCardWrapper = memo(({ children, index }: { children: React.ReactNode, index: number }) => {
+  // Generate more dynamic random path for each card
+  const path = useRef({
+    y: [0, -12 + Math.random() * 8, 0, 10 + Math.random() * 6, 0],
+    x: [0, 6 + Math.random() * 5, 0, -6 - Math.random() * 5, 0],
+    rotate: [0, 1 + Math.random() * 2, 0, -1 - Math.random() * 2, 0]
+  }).current
+
   return (
     <motion.div
-      initial={{ y: 0, x: 0, rotate: 0 }}
-      animate={{
-        y: [0, -20, 0, 20, 0], // Increased floating range
-        x: [0, 15, 0, -15, 0],  // Increased floating range
-        rotate: [0, 3, 0, -3, 0] // Slightly more rotation
-      }}
-      transition={{
-        duration: 5 + index * 0.2, // Faster animation
-        repeat: Infinity,
-        ease: "easeInOut"
-      }}
-      style={{
-        transformStyle: 'preserve-3d',
-        willChange: 'transform'
-      }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
-      {children}
+      <motion.div
+        initial={{ y: 0, x: 0, rotate: 0 }}
+        animate={path}
+        transition={{
+          duration: 6 + index * 0.5, // Faster animation
+          repeat: Infinity,
+          ease: "easeInOut",
+          repeatType: "reverse"
+        }}
+        style={{
+          transformStyle: 'preserve-3d',
+          willChange: 'transform'
+        }}
+      >
+        {children}
+      </motion.div>
     </motion.div>
   )
 })
@@ -88,143 +91,164 @@ export default function LandingPage() {
   const [easterEgg, setEasterEgg] = useState(false)
   const keyBuffer = useRef<string>("")
   const isMobile = useIsMobile()
-  const animationFrameRef = useRef<number | null>(null)
 
-  // Clean up animation frame on unmount
-  useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
+  // Emotion-based quotes (3 per emotion)
+  const emotionQuotes = {
+    rage: [
+      {
+        title: "RAGE AGAINST THE DYING LIGHT",
+        keyword: "RAGE",
+        subtitle: "Let your anger fuel one last explosive message"
+      },
+      {
+        title: "GO OUT WITH A BANG",
+        keyword: "BANG",
+        subtitle: "Make sure they remember your fiery exit"
+      },
+      {
+        title: "FURY UNLEASHED",
+        keyword: "FURY",
+        subtitle: "One final outburst they'll never forget"
       }
-    }
-  }, [])
-
-  // Easter egg handlers
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      keyBuffer.current += e.key.toLowerCase()
-      if (keyBuffer.current.length > 10) keyBuffer.current = keyBuffer.current.slice(-10)
-      if (keyBuffer.current.includes("wow")) {
-        setEasterEgg(true)
-        keyBuffer.current = ""
+    ],
+    heart: [
+      {
+        title: "LOVE NEVER DIES",
+        keyword: "LOVE",
+        subtitle: "Leave behind words that will keep beating in their hearts"
+      },
+      {
+        title: "FOREVER IN YOUR HEART",
+        keyword: "FOREVER",
+        subtitle: "A final love letter that will never fade"
+      },
+      {
+        title: "LAST EMBRACE",
+        keyword: "EMBRACE",
+        subtitle: "Hold them close one final time with your words"
       }
-    }
-    window.addEventListener("keydown", handleKey)
-    return () => window.removeEventListener("keydown", handleKey)
-  }, [])
+    ],
+    funny: [
+      {
+        title: "LAUGH AT DEATH'S DOOR",
+        keyword: "LAUGH",
+        subtitle: "Why be serious when you can go out with a joke?"
+      },
+      {
+        title: "MY FINAL DAD JOKE",
+        keyword: "JOKE",
+        subtitle: "See you later... well, maybe not"
+      },
+      {
+        title: "GRAVE HUMOR",
+        keyword: "HUMOR",
+        subtitle: "Because even the end should be funny"
+      }
+    ],
+    sad: [
+      {
+        title: "TEARS IN THE RAIN",
+        keyword: "TEARS",
+        subtitle: "Let your sorrow flow one last time"
+      },
+      {
+        title: "GOODBYE CRUEL WORLD",
+        keyword: "GOODBYE",
+        subtitle: "A melancholic farewell for the ages"
+      },
+      {
+        title: "FADING WHISPERS",
+        keyword: "WHISPERS",
+        subtitle: "Soft words for a quiet departure"
+      }
+    ],
+    default: [
+      {
+        title: "YOUR GRAND EXIT YOUR WAY",
+        keyword: "EXIT",
+        subtitle: "Create unforgettable goodbye messages with stunning animations"
+      }
+    ]
+  }
 
-  useEffect(() => {
-    if (!easterEgg) return
-    const timeout = setTimeout(() => setEasterEgg(false), 3500)
-    return () => clearTimeout(timeout)
-  }, [easterEgg])
-
-  // Quote carousel
-  const quotes = [
-    {
-      title: "YOUR GRAND EXIT, YOUR WAY",
-      subtitle: "Create unforgettable goodbye messages with stunning animations and effects",
-    },
-    {
-      title: "EXPRESS YOURSELF",
-      subtitle: "Share your final thoughts with style and personality",
-    },
-    {
-      title: "LEAVE A LASTING IMPRESSION",
-      subtitle: "Make your goodbye memorable with custom animations",
-    }
-  ]
+  const [currentEmotion, setCurrentEmotion] = useState<keyof typeof emotionQuotes>("default")
   const [quoteIndex, setQuoteIndex] = useState(0)
-  const [typedTitle, titleDone] = useTypingEffect(quotes[quoteIndex].title, 120, quoteIndex)
-
-  useEffect(() => {
-    if (!titleDone) return
-    const timeout = setTimeout(() => {
-      setQuoteIndex((prev) => (prev + 1) % quotes.length)
-    }, 1500)
-    return () => clearTimeout(timeout)
-  }, [titleDone, quotes.length])
+  const currentQuote = emotionQuotes[currentEmotion][quoteIndex]
+  const [typedTitle, titleDone] = useTypingEffect(currentQuote.title, 100, `${currentEmotion}-${quoteIndex}`) // Fixed reset key
 
   // Feature cards data
   const features = [
     {
-      icon: <Flame className="h-10 w-10 text-red-500" />, // Larger icon
+      icon: <Flame className="h-8 w-8 text-red-500" />,
       title: "Rage Mode",
       description: "Express your frustration with explosive animations",
       color: "bg-red-500/10",
       position: "top-[15%] left-[10%]",
       rotation: -12,
-      emojiType: "rage" as const
+      emojiType: "rage" as const,
+      emotion: "rage" as const
     },
     {
-      icon: <Heart className="h-10 w-10 text-pink-500" />, // Larger icon
+      icon: <Heart className="h-8 w-8 text-pink-500" />,
       title: "Heartfelt",
       description: "Share your love with beautiful heart animations",
       color: "bg-pink-500/10",
       position: "top-[20%] right-[10%]",
       rotation: 8,
-      emojiType: "heart" as const
+      emojiType: "heart" as const,
+      emotion: "heart" as const
     },
     {
-      icon: <Laugh className="h-10 w-10 text-yellow-500" />, // Larger icon
+      icon: <Laugh className="h-8 w-8 text-yellow-500" />,
       title: "Funny Farewell",
       description: "Leave them laughing with hilarious effects",
       color: "bg-yellow-500/10",
       position: "bottom-[20%] left-[15%]",
       rotation: -5,
-      emojiType: "funny" as const
+      emojiType: "funny" as const,
+      emotion: "funny" as const
     },
     {
-      icon: <Frown className="h-10 w-10 text-blue-500" />, // Larger icon
+      icon: <Frown className="h-8 w-8 text-blue-500" />,
       title: "Sad Goodbye",
       description: "Express your sadness with touching animations",
       color: "bg-blue-500/10",
       position: "bottom-[15%] right-[10%]",
       rotation: 10,
-      emojiType: "sad" as const
+      emojiType: "sad" as const,
+      emotion: "sad" as const
     }
   ]
 
-  // Card interaction handlers
-  const [expandedCardIndex, setExpandedCardIndex] = useState<number | null>(null)
-
+  // Handle card click - change emotion and quote
   const handleFeatureClick = (index: number) => {
-    if (expandedCardIndex === index) {
-      setExpandedCardIndex(null)
-    } else {
-      setExpandedCardIndex(index)
-      setActiveFeature(null)
-    }
+    const emotion = features[index].emotion
+    setCurrentEmotion(emotion)
+    setQuoteIndex(Math.floor(Math.random() * emotionQuotes[emotion].length))
+    setActiveFeature(index)
   }
 
-  // Feature rotation animation
-  useEffect(() => {
-    if (expandedCardIndex !== null) return
+  // Fixed gallery button handler with proper hover effects
+  const handleGalleryClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    router.push("/gallery")
+  }
 
-    const rotateFeatures = () => {
-      setActiveFeature(prev => {
-        if (prev === null || prev >= features.length - 1) return 0
-        return prev + 1
-      })
-      animationFrameRef.current = requestAnimationFrame(rotateFeatures)
-    }
+  // Rotate through default quotes when no card is selected
+  useEffect(() => {
+    if (currentEmotion !== "default") return
 
     const timeout = setTimeout(() => {
-      animationFrameRef.current = requestAnimationFrame(rotateFeatures)
-    }, 3000)
+      setQuoteIndex((prev) => (prev + 1) % emotionQuotes.default.length)
+    }, titleDone ? 3000 : 0)
 
-    return () => {
-      clearTimeout(timeout)
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-    }
-  }, [features.length, expandedCardIndex])
+    return () => clearTimeout(timeout)
+  }, [titleDone, currentEmotion])
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        className={`relative h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-950 to-slate-900 text-white`}
+        className="relative h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-950 to-slate-900 text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -232,83 +256,27 @@ export default function LandingPage() {
       >
         <BackgroundAnimation />
 
-        {/* Audio controls */}
-        <div className="fixed bottom-4 right-4 z-20 flex items-center gap-3">
-          <Button
-            onClick={() => setIsMuted(!isMuted)}
-            size="icon"
-            className="rounded-full bg-gradient-to-r from-red-500/80 to-pink-500/80 hover:from-red-600 hover:to-pink-600 text-white h-10 w-10 flex items-center justify-center"
-            aria-label={isMuted ? "Unmute" : "Mute"}
-          >
-            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-          </Button>
-          <motion.div
-            className="bg-black/40 backdrop-blur-sm rounded-full px-4 py-1.5"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="flex items-center"
-            >
-              <span className="text-xs text-white/90 mr-2">Now Playing:</span>
-              <span className="text-sm font-medium text-white">Adele - Skyfall</span>
-            </motion.div>
-          </motion.div>
-          <AudioPlayer
-            src="/sounds/thisIsTheEnd.mp3"
-            autoPlay={!isMuted}
-            loop={true}
-            volume={isMuted ? 0 : 0.3}
-            className="w-auto"
-          />
-        </div>
-
-        {/* Easter Egg */}
-        <AnimatePresence>
-          {easterEgg && (
-            <motion.div
-              className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.7 }}
-              transition={{ type: "spring", stiffness: 200, damping: 18 }}
-            >
-              <motion.div
-                className="bg-gradient-to-br from-pink-500 to-yellow-400 rounded-2xl px-12 py-10 flex flex-col items-center"
-                initial={{ rotate: -10 }}
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ repeat: 2, duration: 1.2 }}
-              >
-                <PartyPopper className="w-16 h-16 mb-4 text-white animate-bounce" />
-                <h3 className="text-3xl font-extrabold mb-2 text-white">WOW! 🎉</h3>
-                <p className="text-lg text-white/90">You found the secret! Enjoy this little celebration. 🥳</p>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
         {/* Header */}
-        <header className="absolute top-0 left-0 right-0 z-10 p-6 flex justify-between items-center">
+        <header className="absolute top-0 left-0 right-0 z-[9999] p-6 flex justify-between items-center">
+
           <div className="flex items-center">
             <Sparkles className="h-6 w-6 text-pink-500 mr-2" />
             <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
               theend.page
             </h1>
           </div>
-          <Button
-            onClick={() => {
-              setIsExiting(true)
-              setTimeout(() => router.push("/gallery"), 1000)
-            }}
-            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
-            size="lg"
-          >
-            Gallery <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          <div className="z-[9999] relative">
+            <Button
+              onClick={() => {
+                setIsExiting(true)
+                setTimeout(() => router.push("/gallery"), 1000)
+              }}
+              size="lg"
+              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-lg"
+            >
+              Gallery <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
         </header>
 
         {/* Main content */}
@@ -318,20 +286,28 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.8 }}
         >
-          <div className="text-center max-w-3xl px-6">
+          <div className="text-center max-w-2xl px-6">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
-                key={quoteIndex}
+                key={`${currentEmotion}-${quoteIndex}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -30 }}
                 transition={{ duration: 0.6, ease: "easeInOut" }}
+                className="mb-8"
               >
-                <h2 className="text-4xl md:text-6xl font-extrabold uppercase mb-6 leading-tight tracking-tighter">
-                  {typedTitle}
+                <h2 className="text-3xl md:text-4xl font-extrabold uppercase mb-4 leading-tight tracking-tight">
+                  {typedTitle.split(' ').map((word, i) => (
+                    <span
+                      key={i}
+                      className={word === currentQuote.keyword ? "text-pink-500" : "text-white"}
+                    >
+                      {word}{i < typedTitle.split(' ').length - 1 ? ' ' : ''}
+                    </span>
+                  ))}
                 </h2>
-                <p className="text-base md:text-lg text-gray-400 mb-8 mt-4 font-normal">
-                  {quotes[quoteIndex].subtitle}
+                <p className="text-base md:text-lg text-gray-400 font-medium mb-8">
+                  {currentQuote.subtitle}
                 </p>
               </motion.div>
             </AnimatePresence>
@@ -341,7 +317,7 @@ export default function LandingPage() {
                 setTimeout(() => router.push("/onboarding"), 1000)
               }}
               size="lg"
-              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-lg"
+              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white mt-4"
             >
               Create Your Exit Page <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -360,45 +336,20 @@ export default function LandingPage() {
               onClick={() => handleFeatureClick(index)}
             >
               <FloatingCardWrapper index={index}>
-                <motion.div
-                  initial={{ rotate: feature.rotation, opacity: 0 }}
-                  animate={{
-                    rotate: expandedCardIndex === index ? 0 : feature.rotation,
-                    opacity: 1,
-                    scale: expandedCardIndex === index ? 1.1 : (activeFeature === index) ? 1.05 : 1
-                  }}
-                  transition={{
-                    type: 'spring',
-                    damping: 15,
-                    stiffness: 100,
-                    mass: 0.5,
-                    restDelta: 0.001
-                  }}
-                >
-                  <FeatureCard
-                    icon={feature.icon}
-                    title={feature.title}
-                    description={feature.description}
-                    color={feature.color}
-                    isActive={activeFeature === index}
-                    initialRotation={feature.rotation}
-                    emojiType={feature.emojiType}
-                  />
-                </motion.div>
+                <FeatureCard
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                  color={feature.color}
+                  isActive={activeFeature === index}
+                  initialRotation={feature.rotation}
+                  emojiType={feature.emojiType}
+                />
               </FloatingCardWrapper>
             </div>
           ))}
         </div>
 
-        {/* Exit overlay */}
-        {isExiting && (
-          <motion.div
-            className="absolute inset-0 bg-black z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          />
-        )}
       </motion.div>
     </AnimatePresence>
   )

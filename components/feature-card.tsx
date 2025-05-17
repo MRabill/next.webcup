@@ -82,9 +82,9 @@ export function FeatureCard({
           "rounded-xl cursor-pointer",
           "transform-gpu overflow-visible",
           color,
-          "w-full max-w-[300px] md:w-96 p-4 relative", // Wider card
+          "w-full max-w-[300px] md:w-96 p-4 relative", 
           "shadow-[0_0_15px_rgba(255,255,255,0.2)]",
-          "flex items-stretch", // Use stretch for full height
+          "flex items-stretch",
           "min-h-[120px] md:min-h-[140px]",
           isActive && "shadow-[0_0_25px_rgba(255,255,255,0.4)]"
         )}
@@ -107,18 +107,15 @@ export function FeatureCard({
           }}
         />
         
-        {/* Icon container (30% width) */}
         <div className="w-[30%] flex items-center justify-center p-2 relative">
           <div className="w-full h-full flex items-center justify-center">
-            <div className="text-4xl md:text-5xl"> {/* Larger icon */}
+            <div className="text-4xl md:text-5xl"> 
               {icon}
             </div>
           </div>
-          {/* Separator line */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-3/4 bg-gray-400/30"></div>
         </div>
 
-        {/* Text container (70% width) */}
         <motion.div 
           className="w-[70%] pl-4 flex flex-col justify-center"
           animate={{
