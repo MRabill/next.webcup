@@ -1,234 +1,170 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { motion, AnimatePresence } from "framer-motion"
-import ConstellationBackground from "@/components/effects/constellation-background"
-import { moods } from "@/lib/data"
-import AudioPlayer from "@/components/ui/audio-player"
-import { getMusicForMood } from "@/lib/music"
+import { AnimatePresence, motion } from "framer-motion"
+import { Sparkles, Flame, Heart, Frown, Cloud, Bot, Laugh, ArrowRight } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { FeatureCard } from "@/components/feature-card"
+import { BackgroundAnimation } from "@/components/background-animation"
 
 export default function LandingPage() {
-  const [activeMood, setActiveMood] = useState<string | null>(null)
-  const [isLoaded, setIsLoaded] = useState(false)
+  const router = useRouter()
+  const [activeFeature, setActiveFeature] = useState<number | null>(null)
+  const [isExiting, setIsExiting] = useState(false)
 
-  useEffect(() => {
-    setIsLoaded(true)
-  }, [])
-
-  const moodCards = [
+  // Create four featured cards for the corners
+  const features = [
     {
-      id: "rage",
-      name: "Rage Mode",
+      icon: <Flame className="h-8 w-8 text-red-500" />,
+      title: "Rage Mode",
       description: "Express your frustration with explosive animations and effects",
-      position: { top: "15%", left: "10%" },
-      delay: 0.2,
+      color: "bg-red-500/10",
+      borderColor: "border-red-500/20",
+      position: "top-[15%] left-[10%]", // Top left
+      rotation: -12,
     },
     {
-      id: "heartfelt",
-      name: "Heartfelt Goodbyes",
+      icon: <Heart className="h-8 w-8 text-pink-500" />,
+      title: "Heartfelt Goodbyes",
       description: "Create sincere, emotional farewells with floating hearts",
-      position: { top: "20%", right: "10%" },
-      delay: 0.4,
+      color: "bg-pink-500/10",
+      borderColor: "border-pink-500/20",
+      position: "top-[15%] right-[10%]", // Top right
+      rotation: 12,
     },
     {
-      id: "calm",
-      name: "Calm Farewells",
-      description: "Peaceful, serene goodbyes with gentle particles",
-      position: { top: "45%", left: "5%" },
-      delay: 0.6,
+      icon: <Laugh className="h-8 w-8 text-yellow-500" />,
+      title: "Funny Exits",
+      description: "Leave them laughing with confetti and bouncing emojis",
+      color: "bg-yellow-500/10",
+      borderColor: "border-yellow-500/20",
+      position: "bottom-[15%] left-[10%]", // Bottom left
+      rotation: 12,
     },
     {
-      id: "funny",
-      name: "Funny Exits",
-      description: "Light-hearted goodbyes with confetti and bouncing emojis",
-      position: { top: "40%", left: "15%" },
-      delay: 0.8,
-    },
-    {
-      id: "robotic",
-      name: "Robotic Terminations",
-      description: "Cold, calculated exits with digital glitch effects",
-      position: { top: "35%", right: "15%" },
-      delay: 1.0,
-    },
-    {
-      id: "sad",
-      name: "Sad Departures",
+      icon: <Frown className="h-8 w-8 text-blue-500" />,
+      title: "Sad Departures",
       description: "Set the mood with rain effects and melancholic visuals",
-      position: { top: "60%", right: "10%" },
-      delay: 1.2,
+      color: "bg-blue-500/10",
+      borderColor: "border-blue-500/20",
+      position: "bottom-[15%] right-[10%]", // Bottom right
+      rotation: -12,
     },
   ]
 
-  const getMoodIcon = (moodId: string) => {
-    const mood = moods.find((m) => m.id === moodId)
-    if (!mood || !mood.icon) return null
-
-    const Icon = mood.icon
-    return (
-      <div className={`bg-${mood.color}-500/20 p-3 rounded-full`}>
-        <Icon className={`text-${mood.color}-400`} size={24} />
-      </div>
-    )
+  const handleExitClick = () => {
+    setIsExiting(true)
+    setTimeout(() => {
+      router.push("/onboarding")
+    }, 1000)
   }
 
-  const getMoodGradient = (moodId: string) => {
-    switch (moodId) {
-      case "heartfelt":
-        return "from-pink-500/20 to-purple-500/20"
-      case "rage":
-        return "from-red-600/20 to-orange-500/20"
-      case "funny":
-        return "from-yellow-400/20 to-orange-400/20"
-      case "sad":
-        return "from-blue-500/20 to-indigo-500/20"
-      case "calm":
-        return "from-green-400/20 to-teal-500/20"
-      case "robotic":
-        return "from-slate-600/20 to-slate-700/20"
-      default:
-        return "from-slate-600/20 to-slate-700/20"
-    }
-  }
+  useEffect(() => {
+    // Cycle through features automatically
+    const interval = setInterval(() => {
+      setActiveFeature((prev) => {
+        if (prev === null || prev >= features.length - 1) {
+          return 0
+        }
+        return prev + 1
+      })
+    }, 3000)
 
-  const currentMusic = activeMood ? getMusicForMood(activeMood) : null
+    return () => clearInterval(interval)
+  }, [features.length])
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 text-white">
-      {/* Background */}
-      <ConstellationBackground className="z-0" />
+    <AnimatePresence mode="wait">
+      <motion.div
+        className="relative h-screen w-screen overflow-hidden bg-gradient-to-b from-slate-950 to-slate-900 text-white"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <BackgroundAnimation />
 
-      {/* Audio player */}
-      {currentMusic && (
-        <AudioPlayer
-          src={currentMusic.src}
-          autoPlay={true}
-          loop={true}
-          volume={0.2}
-          className="fixed bottom-4 right-4 z-50"
-          showTitle={true}
-          title={currentMusic.title}
-          artist={currentMusic.artist}
-        />
-      )}
+        {/* Header */}
+        <header className="absolute top-0 left-0 right-0 z-10 p-6 flex justify-between items-center">
+          <div className="flex items-center">
+            <Sparkles className="h-6 w-6 text-pink-500 mr-2" />
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
+              theend.page
+            </h1>
+          </div>
+          <Button
+            onClick={handleExitClick}
+            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white"
+            size="lg"
+          >
+            Exit With Style <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </header>
 
-      {/* Navigation */}
-      <nav className="container mx-auto p-4 flex justify-between items-center relative z-10">
+        {/* Center Quote */}
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center"
+          className="absolute inset-0 flex items-center justify-center z-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
         >
-          <div className="text-2xl font-bold flex items-center">
-            <span className="text-pink-500">the</span>
-            <span>end</span>
-            <span className="text-pink-500">.</span>
-            <span>page</span>
+          <div className="text-center max-w-3xl px-6">
+            <h2 className="text-5xl md:text-7xl font-extrabold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">
+              Your Grand Exit, Your Way
+            </h2>
+            <p className="text-xl md:text-2xl text-slate-300 mb-8">
+              Create unforgettable goodbye messages with stunning animations and effects
+            </p>
+            <Button
+              onClick={handleExitClick}
+              size="lg"
+              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white text-lg"
+            >
+              Create Your Exit Page <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex gap-4 items-center"
-        >
-          <ThemeToggle />
-          <Link href="/gallery">
-            <Button variant="ghost" className="text-white hover:bg-white/10">
-              Gallery
-            </Button>
-          </Link>
-          <Link href="/create">
-            <Button className="bg-pink-500 hover:bg-pink-600 text-white">
-              Exit With Style
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </motion.div>
-      </nav>
 
-      {/* Floating mood cards */}
-      <AnimatePresence>
-        {isLoaded &&
-          moodCards.map((card) => (
+        {/* Feature Cards - placed in corners with 3D effect */}
+        <div className="perspective-[1200px] absolute inset-0">
+          {features.map((feature, index) => (
             <motion.div
-              key={card.id}
-              className="absolute z-10"
-              style={{
-                top: card.position.top,
-                left: card.position.left,
-                right: card.position.right,
-                maxWidth: "280px",
+              key={index}
+              className={cn("absolute z-10", feature.position)}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{
+                opacity: 1,
+                scale: activeFeature === index ? 1.05 : 1,
+                boxShadow: activeFeature === index ? "0 0 20px rgba(255, 255, 255, 0.2)" : "none",
               }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: card.delay }}
-              whileHover={{ scale: 1.05, y: -5 }}
-              onMouseEnter={() => setActiveMood(card.id)}
-              onMouseLeave={() => setActiveMood(null)}
+              transition={{ delay: 0.1 * index, duration: 0.5 }}
             >
-              <div
-                className={`bg-gradient-to-br ${getMoodGradient(card.id)} backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-lg`}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  {getMoodIcon(card.id)}
-                  <h3 className="font-bold">{card.name}</h3>
-                </div>
-                <p className="text-sm text-gray-300">{card.description}</p>
-              </div>
+              <FeatureCard
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+                color={feature.color}
+                borderColor={feature.borderColor}
+                isActive={activeFeature === index}
+                onClick={() => setActiveFeature(index)}
+                initialRotation={feature.rotation}
+              />
             </motion.div>
           ))}
-      </AnimatePresence>
+        </div>
 
-      {/* Hero section */}
-      <main className="container mx-auto px-4 py-20 flex flex-col items-center text-center relative z-10 mt-20">
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-5xl md:text-7xl font-bold mb-6"
-        >
-          Your{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
-            Grand Exit
-          </span>
-          ,<br />
-          Your{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
-            Way
-          </span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-xl md:text-2xl max-w-3xl mb-10 text-gray-300"
-        >
-          Create unforgettable goodbye messages with stunning animations and effects
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          <Link href="/create">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 text-white px-8 py-6 text-lg rounded-full"
-            >
-              Create Your Exit Page
-              <ArrowRight className="ml-2" />
-            </Button>
-          </Link>
-        </motion.div>
-      </main>
-    </div>
+        {/* Exit Animation Overlay */}
+        {isExiting && (
+          <motion.div
+            className="absolute inset-0 bg-black z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          />
+        )}
+      </motion.div>
+    </AnimatePresence>
   )
 }
