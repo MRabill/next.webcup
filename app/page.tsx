@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { AnimatePresence, motion } from "framer-motion"
-import { Sparkles, Flame, Heart, Frown, Cloud, Bot, Laugh, ArrowRight, PartyPopper } from "lucide-react"
+import { Sparkles, Flame, Heart, Frown, Cloud, Bot, Laugh, ArrowRight, PartyPopper, Volume2, VolumeX } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { FeatureCard } from "@/components/feature-card"
 import { BackgroundAnimation } from "@/components/background-animation"
@@ -39,6 +39,7 @@ export default function LandingPage() {
   const router = useRouter()
   const [activeFeature, setActiveFeature] = useState<number | null>(null)
   const [isExiting, setIsExiting] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
 
   // Easter Egg state
   const [easterEgg, setEasterEgg] = useState(false);
@@ -266,10 +267,16 @@ export default function LandingPage() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <BackgroundAnimation />
-
-        {/* Mini Audio Player with Now Playing Text */}
+        <BackgroundAnimation />        {/* Mini Audio Player with Now Playing Text */}
         <div className="fixed bottom-4 right-4 z-20 flex items-center gap-3">
+          <Button
+            onClick={() => setIsMuted(!isMuted)}
+            size="icon"
+            className="rounded-full bg-gradient-to-r from-red-500/80 to-pink-500/80 hover:from-red-600 hover:to-pink-600 text-white shadow-lg h-10 w-10 flex items-center justify-center"
+            aria-label={isMuted ? "Unmute" : "Mute"}
+          >
+            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+          </Button>
           <motion.div 
             className="bg-black/40 backdrop-blur-sm rounded-full px-4 py-1.5 shadow-lg"
             initial={{ opacity: 0, x: 20 }}
@@ -288,9 +295,9 @@ export default function LandingPage() {
           </motion.div>
           <AudioPlayer 
             src="/sounds/thisIsTheEnd.mp3" 
-            autoPlay={true} 
+            autoPlay={!isMuted}
             loop={true}
-            volume={0.3}
+            volume={isMuted ? 0 : 0.3}
             className="w-auto"
           />
         </div>
