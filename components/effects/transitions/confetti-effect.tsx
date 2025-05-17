@@ -178,7 +178,7 @@ export function FunnyAnimation({ isActive, onComplete }: FunnyAnimationProps) {
 
   return (
     <>
-      <audio ref={audioRef} src="/sounds/confetti-pop.mp3" preload="auto" />
+      <audio ref={audioRef} src="/sounds/laughing.mp3" preload="auto" />
 
       <div className="fixed inset-0 pointer-events-none z-50">
         <canvas ref={canvasRef} className="w-full h-full" />

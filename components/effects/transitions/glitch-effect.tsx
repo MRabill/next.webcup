@@ -49,8 +49,8 @@ export default function GlitchEffect() {
     }
 
     // Play sound effect
-    const audio = new Audio("/sounds/digital-glitch.mp3")
-    audio.volume = 0.3
+    const audio = new Audio("/sounds/robot.mp3")
+    audio.volume = 1
     audio.play().catch((err) => console.error("Failed to play sound:", err))
 
     // Animation loop

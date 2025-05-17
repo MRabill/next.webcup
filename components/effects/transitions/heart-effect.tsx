@@ -148,7 +148,7 @@ export function HeartfeltAnimation({ isActive, onComplete }: HeartfeltAnimationP
 
   return (
     <>
-      <audio ref={audioRef} src="/heartfelt-music.mp3" />
+      <audio ref={audioRef} src="/sounds/warm.mp3" />
 
       <div className="fixed inset-0 pointer-events-none z-50">
         {/* Soft glow overlay */}
