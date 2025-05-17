@@ -37,6 +37,12 @@ export default function GalleryPage() {
       comments: 12,
       date: "2 days ago",
       slug: "my-dramatic-exit",
+      reactions: {
+        like: 14,
+        sad: 3,
+        angry: 1,
+        funny: 5,
+      }
     },
     {
       id: 2,
@@ -53,6 +59,12 @@ export default function GalleryPage() {
       comments: 8,
       date: "1 week ago",
       slug: "so-long-and-thanks",
+      reactions: {
+        like: 14,
+        sad: 3,
+        angry: 1,
+        funny: 5,
+      }
     },
     {
       id: 3,
@@ -69,6 +81,12 @@ export default function GalleryPage() {
       comments: 24,
       date: "3 days ago",
       slug: "with-a-heavy-heart",
+      reactions: {
+        like: 14,
+        sad: 3,
+        angry: 1,
+        funny: 5,
+      }
     },
     {
       id: 4,
@@ -85,6 +103,12 @@ export default function GalleryPage() {
       comments: 9,
       date: "5 days ago",
       slug: "moving-forward",
+      reactions: {
+        like: 14,
+        sad: 3,
+        angry: 1,
+        funny: 5,
+      }
     },
     {
       id: 5,
@@ -101,6 +125,12 @@ export default function GalleryPage() {
       comments: 7,
       date: "1 day ago",
       slug: "notice-of-termination",
+      reactions: {
+        like: 14,
+        sad: 3,
+        angry: 1,
+        funny: 5,
+      }
     },
     {
       id: 6,
@@ -117,6 +147,12 @@ export default function GalleryPage() {
       comments: 15,
       date: "4 days ago",
       slug: "a-heartfelt-farewell",
+      reactions: {
+        like: 14,
+        sad: 3,
+        angry: 1,
+        funny: 5,
+      }
     },
   ]
 
@@ -141,6 +177,7 @@ export default function GalleryPage() {
     }
     return 0
   })
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 text-slate-900 dark:text-white relative">
@@ -177,6 +214,63 @@ export default function GalleryPage() {
             </Link>
           </div>
         </div>
+        {/* Hall of Fame Section */}
+        <section className="relative z-10 px-4 md:px-8 py-10 bg-gradient-to-r from-purple-600/10 to-pink-500/10 dark:from-purple-700/20 dark:to-pink-600/20 backdrop-blur-md border-b border-white/10 mb-5  rounded-2xl">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
+              Hall of Fame 🏆
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {exitPages
+                .sort((a, b) => b.likes - a.likes)
+                .slice(0, 3)
+                .map((page, index) => {
+                  const baseColors = [
+                    "from-yellow-400 to-yellow-600", // Gold
+                    "from-gray-300 to-gray-500",     // Silver
+                    "from-amber-600 to-orange-700",  // Bronze
+                  ]
+                  return (
+                    <div
+                      key={page.id}
+                      className={`relative p-6 rounded-xl shadow-lg backdrop-blur-md border border-white/10 bg-gradient-to-br ${baseColors[index]}`}
+                    >
+                      <span className="absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full bg-black/40 text-white shadow-md">
+                        #{index + 1}
+                      </span>
+                      <h3 className="text-lg font-semibold mb-2 text-white truncate">
+                        {page.title}
+                      </h3>
+                      <p className="text-sm text-white/90 line-clamp-3 mb-4">{page.excerpt}</p>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={page.author.avatar}
+                          alt={page.author.name}
+                          className="h-10 w-10 rounded-full border border-white/20"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-white">{page.author.name}</p>
+                          <p className="text-xs text-white/70">{page.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 text-xs text-white/80 mt-4">
+                        <span className="flex items-center gap-1">
+                          <Eye className="w-4 h-4" /> {page.views}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Heart className="w-4 h-4" /> {page.likes}
+                        </span>
+                        <span className="capitalize px-2 py-0.5 rounded bg-black/20 border border-white/20">
+                          {page.mood}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+
+            </div>
+          </div>
+        </section>
 
         <Tabs defaultValue="trending" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-3 bg-white/20 dark:bg-white/10 rounded-lg mb-8 w-full md:w-[300px]">

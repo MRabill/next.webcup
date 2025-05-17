@@ -1,11 +1,35 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Heart, MessageSquare, Eye, ArrowRight, Flame, Laugh, Frown, Cloud, Cpu } from "lucide-react"
+import {
+  Heart,
+  MessageSquare,
+  Eye,
+  ArrowRight,
+  Flame,
+  Laugh,
+  Frown,
+  Cloud,
+  Cpu,
+} from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import ReactionBar from "@/components/gallery/ReactionBar"
+import { Player } from "@lottiefiles/react-lottie-player"
+import likeAnimation from "./lottie/Animation - 1747509269087.json"
+import sadAnimation from "./lottie/Animation - 1747509360758.json"
+import angryAnimation from "./lottie/Animation - 1747509318081.json"
+import funnyAnimation from "./lottie/laigh.json"
+
+const emojiAnimations = {
+  like: likeAnimation,
+  sad: sadAnimation,
+  angry: angryAnimation,
+  funny: funnyAnimation,
+}
 
 interface GalleryCardProps {
   page: {
@@ -22,10 +46,28 @@ interface GalleryCardProps {
     comments: number
     date: string
     slug: string
+    reactions: {
+      like: number
+      sad: number
+      angry: number
+      funny: number
+    }
   }
 }
 
 export default function GalleryCard({ page }: GalleryCardProps) {
+  const [reactions, setReactions] = useState(page.reactions)
+  const [activeAnimation, setActiveAnimation] = useState<keyof typeof emojiAnimations | null>(null)
+
+  const handleReact = (type: keyof typeof emojiAnimations) => {
+    setReactions((prev) => ({
+      ...prev,
+      [type]: prev[type] + 1,
+    }))
+    setActiveAnimation(type)
+    setTimeout(() => setActiveAnimation(null), 4000)
+  }
+
   const getMoodIcon = (mood: string) => {
     switch (mood) {
       case "heartfelt":
@@ -69,14 +111,26 @@ export default function GalleryCard({ page }: GalleryCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col h-full"
+      className="flex flex-col h-full relative"
     >
+      {activeAnimation && (
+        <div className="absolute inset-0 z-50 flex justify-center items-center pointer-events-none">
+          <Player
+            key={activeAnimation} // ✅ ensures it restarts
+            autoplay
+            loop={false}
+            src={emojiAnimations[activeAnimation]}
+            style={{ height: "150px", width: "150px" }}
+          />
+        </div>
+      )}
+
+
       <Card
         className={`relative flex flex-col justify-between h-full bg-gradient-to-br ${getMoodGradient(
           page.mood
         )} border border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group overflow-hidden`}
       >
-        {/* Opacity Overlay */}
         <div className="absolute inset-0 bg-black/30 z-0" />
 
         <CardContent className="p-6 flex-grow flex flex-col relative z-10">
@@ -109,10 +163,20 @@ export default function GalleryCard({ page }: GalleryCardProps) {
               <Eye className="h-4 w-4 mr-1" />
               {page.views}
             </div>
-            <div className="flex items-center mr-4">
-              <Heart className="h-4 w-4 mr-1" />
-              {page.likes}
+            <div className="relative mr-4 group">
+              <div className="flex items-center text-white/80 hover:text-white transition cursor-pointer">
+                <Heart className="h-4 w-4 mr-1" />
+                {reactions.like}
+              </div>
+
+              <div
+                className="absolute bottom-full left-0 mb-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto pointer-events-none transition-all duration-200 bg-black/80 px-3 py-2 rounded-xl shadow-lg z-20"
+              >
+                <ReactionBar onReact={handleReact} reactions={reactions} />
+              </div>
             </div>
+
+
             <div className="flex items-center">
               <MessageSquare className="h-4 w-4 mr-1" />
               {page.comments}
