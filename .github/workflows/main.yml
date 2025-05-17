@@ -29,5 +29,5 @@ jobs:
           server: www.codewaresreload.maurice.webcup.hodi.host
           username: ${{ secrets.ftp_username }}
           password: ${{ secrets.ftp_password }}
-          local-dir: ./out
+          local-dir: ./out/
           server-dir: /public_html/
