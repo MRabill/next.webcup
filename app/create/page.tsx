@@ -129,7 +129,7 @@ export default function CreatePage() {
     if (typeof window !== 'undefined') {
       const savedUsername = localStorage.getItem('endpage_username')
       const savedEmail = localStorage.getItem('endpage_email')
-      
+
       if (savedUsername || savedEmail) {
         console.log('Loading user data from localStorage:', { savedUsername, savedEmail })
         setFormData(prev => ({
@@ -306,7 +306,7 @@ export default function CreatePage() {
                   variant="outline"
                   onClick={handlePrevious}
                   disabled={activeTab === "mood"}
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="bg-white/10 border-white/20 text-white hover:bg-gradient-to-r hover:from-purple-500 hover:to-indigo-600 hover:border-transparent transition-all"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Previous
@@ -314,7 +314,7 @@ export default function CreatePage() {
                 <Button
                   variant="outline"
                   onClick={() => router.push("/")}
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="bg-white/10 border-white/20 text-white hover:bg-gradient-to-r hover:from-purple-500 hover:to-indigo-600 hover:border-transparent transition-all"
                 >
                   Back to Home
                 </Button>
@@ -322,8 +322,7 @@ export default function CreatePage() {
               {activeTab === "preview" ? (
                 <Button
                   onClick={handlePublish}
-                  className="bg-gradient-to-r from-green-500 to-emerald-700 hover:from-green-600 hover:to-emerald-800"
-                >
+                  variant="gradient"                >
                   <Save className="mr-2 h-4 w-4" />
                   Publish Exit Page
                 </Button>

@@ -20,6 +20,24 @@ interface AudioPlayerProps {
   artist?: string
 }
 
+// Helper function to get error messages
+const getAudioErrorMessage = (code?: number): string => {
+  if (code === undefined) return "Unknown audio error"
+  
+  switch(code) {
+    case MediaError.MEDIA_ERR_ABORTED:
+      return "Playback was aborted"
+    case MediaError.MEDIA_ERR_NETWORK:
+      return "Network error occurred"
+    case MediaError.MEDIA_ERR_DECODE:
+      return "Audio decoding failed"
+    case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+      return "Audio format not supported"
+    default:
+      return `Unknown error (code: ${code})`
+  }
+}
+
 export default function AudioPlayer({
   src,
   autoPlay = false,
@@ -40,26 +58,21 @@ export default function AudioPlayer({
   const [isLoaded, setIsLoaded] = useState(false)
   const [isError, setIsError] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
+  const [errorMessage, setErrorMessage] = useState("")
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const playPromiseRef = useRef<Promise<void> | null>(null)
 
+  // Initialize audio element and event listeners
   useEffect(() => {
-    const audio = new Audio(src)
+    const audio = new Audio()
     audioRef.current = audio
-
-    audio.volume = initialVolume
-    audio.loop = loop
 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration)
       setIsLoaded(true)
       setIsError(false)
-      if (autoPlay) {
-        audio.play().catch((err) => {
-          console.error("Failed to autoplay:", err)
-          setIsPlaying(false)
-        })
-      }
+      setErrorMessage("")
     }
 
     const handleTimeUpdate = () => {
@@ -69,12 +82,18 @@ export default function AudioPlayer({
     const handleEnded = () => {
       if (!loop) {
         setIsPlaying(false)
-        if (onEnded) onEnded()
+        onEnded?.()
       }
     }
 
     const handleError = () => {
-      console.error("Audio error:", audio.error)
+      const error = audio.error
+      const message = error 
+        ? `Audio error: ${getAudioErrorMessage(error.code)}`
+        : "Unknown audio playback error"
+      
+      console.error(message)
+      setErrorMessage(message)
       setIsError(true)
       setIsLoaded(false)
       setIsPlaying(false)
@@ -86,6 +105,11 @@ export default function AudioPlayer({
     audio.addEventListener("error", handleError)
 
     return () => {
+      // Clean up any pending play promises
+      playPromiseRef.current?.catch(() => {})
+      playPromiseRef.current = null
+      
+      // Clean up audio element
       audio.pause()
       audio.src = ""
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata)
@@ -93,46 +117,80 @@ export default function AudioPlayer({
       audio.removeEventListener("ended", handleEnded)
       audio.removeEventListener("error", handleError)
 
+      // Clear any pending timeouts
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [src, autoPlay, loop, initialVolume, onEnded])
+  }, [loop, onEnded])
 
+  // Handle source changes
   useEffect(() => {
-    if (!audioRef.current) return
+    const audio = audioRef.current
+    if (!audio) return
 
-    if (isPlaying) {
-      audioRef.current.play().catch((err) => {
-        console.error("Failed to play:", err)
-        setIsPlaying(false)
-      })
-    } else {
-      audioRef.current.pause()
-    }
-  }, [isPlaying])
-
-  useEffect(() => {
-    if (!audioRef.current) return
-    audioRef.current.volume = isMuted ? 0 : volume
-  }, [volume, isMuted])
-
-  // Update audio when src changes
-  useEffect(() => {
-    if (!audioRef.current) return
-
-    audioRef.current.src = src
-    audioRef.current.load()
+    audio.src = src
+    audio.volume = isMuted ? 0 : volume
+    audio.loop = loop
     setIsLoaded(false)
     setIsError(false)
+    setErrorMessage("")
 
-    if (isPlaying) {
-      audioRef.current.play().catch((err) => {
-        console.error("Failed to play new source:", err)
+    const playAfterLoad = async () => {
+      try {
+        if (isPlaying) {
+          playPromiseRef.current = audio.play()
+          await playPromiseRef.current
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to play audio"
+        console.error("Playback error:", message)
+        setErrorMessage(message)
+        setIsError(true)
         setIsPlaying(false)
-      })
+      } finally {
+        playPromiseRef.current = null
+      }
     }
-  }, [src, isPlaying])
+
+    // Some browsers require the audio to be loaded before playing
+    audio.load()
+    playAfterLoad()
+  }, [src, isPlaying, volume, isMuted, loop])
+
+  // Handle play/pause state changes
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio || !isLoaded) return
+
+    const handlePlayback = async () => {
+      try {
+        if (isPlaying) {
+          playPromiseRef.current = audio.play()
+          await playPromiseRef.current
+        } else {
+          audio.pause()
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Playback failed"
+        console.error("Playback error:", message)
+        setErrorMessage(message)
+        setIsError(true)
+        setIsPlaying(false)
+      } finally {
+        playPromiseRef.current = null
+      }
+    }
+
+    handlePlayback()
+  }, [isPlaying, isLoaded])
+
+  // Handle initial autoplay
+  useEffect(() => {
+    if (autoPlay && isLoaded && !isError) {
+      setIsPlaying(true)
+    }
+  }, [autoPlay, isLoaded, isError])
 
   // Auto-hide player after 5 seconds of inactivity
   useEffect(() => {
@@ -155,7 +213,11 @@ export default function AudioPlayer({
     }
   }, [hidden, isPlaying, volume, isMuted, currentTime])
 
-  const togglePlay = () => setIsPlaying(!isPlaying)
+  const togglePlay = () => {
+    if (!isLoaded || isError) return
+    setIsPlaying(prev => !prev)
+  }
+
   const toggleMute = () => setIsMuted(!isMuted)
 
   const handleVolumeChange = (value: number[]) => {
@@ -169,6 +231,7 @@ export default function AudioPlayer({
   }
 
   const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00"
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`
@@ -183,29 +246,30 @@ export default function AudioPlayer({
           className={cn(
             "flex items-center space-x-2 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg",
             className,
+            isError && "bg-red-900/20" // Visual feedback for errors
           )}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
           onMouseEnter={() => {
-            if (timeoutRef.current) {
-              clearTimeout(timeoutRef.current)
-            }
+            if (timeoutRef.current) clearTimeout(timeoutRef.current)
             setIsVisible(true)
           }}
           onMouseLeave={() => {
-            timeoutRef.current = setTimeout(() => {
-              setIsVisible(false)
-            }, 5000)
+            timeoutRef.current = setTimeout(() => setIsVisible(false), 5000)
           }}
         >
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-white hover:bg-white/20"
+            className={cn(
+              "h-8 w-8 text-white hover:bg-white/20",
+              isError && "text-red-400" // Visual feedback for errors
+            )}
             onClick={togglePlay}
             disabled={!isLoaded || isError}
+            aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isPlaying ? <Pause size={16} /> : <Play size={16} />}
           </Button>
@@ -218,14 +282,40 @@ export default function AudioPlayer({
           )}
 
           <div className="hidden sm:flex items-center space-x-2 min-w-[100px]">
-            <Slider value={[volume]} max={1} step={0.01} onValueChange={handleVolumeChange} className="w-20" />
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={toggleMute}>
+            <Slider 
+              value={[volume]} 
+              max={1} 
+              step={0.01} 
+              onValueChange={handleVolumeChange} 
+              className="w-20"
+              disabled={isError}
+            />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={cn(
+                "h-8 w-8 text-white hover:bg-white/20",
+                isError && "text-red-400" // Visual feedback for errors
+              )}
+              onClick={toggleMute}
+              disabled={isError}
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
               {isMuted || volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </Button>
           </div>
 
-          <div className="text-xs text-white/70">
-            {isError ? "Error" : isLoaded ? formatTime(currentTime) : "Loading..."}
+          <div className={cn(
+            "text-xs",
+            isError ? "text-red-300" : "text-white/70"
+          )}>
+            {isError ? (
+              <span title={errorMessage}>Error</span>
+            ) : isLoaded ? (
+              formatTime(currentTime)
+            ) : (
+              "Loading..."
+            )}
           </div>
         </motion.div>
       )}

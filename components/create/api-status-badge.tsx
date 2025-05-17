@@ -29,7 +29,7 @@ export default function ApiStatusBadge() {
         } else {
           setApiStatus('loading')
         }
-        
+
         // Get detailed status if available
         try {
           const detailsJson = sessionStorage.getItem('api_status_record')
@@ -54,7 +54,7 @@ export default function ApiStatusBadge() {
     }
 
     window.addEventListener('storage', handleStorageChange)
-    
+
     // Check every 10 seconds
     const intervalId = setInterval(checkStatus, 10000)
 
@@ -83,9 +83,9 @@ export default function ApiStatusBadge() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-500 cursor-help">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              AI Connected
+            <Badge variant="outline" className="ml-2 bg-green-500/10 text-green-500 cursor-help whitespace-nowrap">
+              <CheckCircle2 className="h-3 w-3 mr-1 inline" />
+              <span className="inline">AI Connected</span>
             </Badge>
           </TooltipTrigger>
           <TooltipContent>

@@ -20,11 +20,9 @@ export default function EffectPreview({ mood, effects }: EffectPreviewProps) {
       const ctx = canvas.getContext("2d")
       if (!ctx) return
 
-      // Set canvas dimensions
       canvas.width = canvas.offsetWidth
       canvas.height = canvas.offsetHeight
 
-      // Handle window resize
       const handleResize = () => {
         if (canvas) {
           canvas.width = canvas.offsetWidth
@@ -34,10 +32,8 @@ export default function EffectPreview({ mood, effects }: EffectPreviewProps) {
 
       window.addEventListener("resize", handleResize)
 
-      // Particle systems
       const particles: any[] = []
 
-      // Create particles based on effects
       if (effects.includes("fire")) {
         for (let i = 0; i < 50; i++) {
           particles.push({
@@ -89,11 +85,9 @@ export default function EffectPreview({ mood, effects }: EffectPreviewProps) {
         }
       }
 
-      // Animation loop
       const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-        // Update and draw particles
         for (let i = 0; i < particles.length; i++) {
           const p = particles[i]
 
@@ -182,10 +176,8 @@ export default function EffectPreview({ mood, effects }: EffectPreviewProps) {
 
   return (
     <div className="relative w-full h-full">
-      {/* Canvas for particle effects */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-      {/* Mood-based effects */}
       <div className="absolute inset-0 flex items-center justify-center">
         {mood === "heartfelt" && effects.includes("hearts") && (
           <div className="relative w-full h-full">
@@ -266,7 +258,6 @@ export default function EffectPreview({ mood, effects }: EffectPreviewProps) {
           </div>
         )}
 
-        {/* Glass shatter effect */}
         {effects.includes("shatter") && (
           <div className="absolute inset-0 pointer-events-none">
             <svg width="100%" height="100%" className="absolute inset-0">
@@ -303,24 +294,24 @@ export default function EffectPreview({ mood, effects }: EffectPreviewProps) {
           </div>
         )}
 
-        {/* Central icon */}
         <motion.div
           className={`z-10 p-6 rounded-full ${
             mood === "heartfelt"
               ? "bg-pink-500/30"
               : mood === "rage"
-                ? "bg-red-500/30"
-                : mood === "funny"
-                  ? "bg-yellow-400/30"
-                  : mood === "sad"
-                    ? "bg-blue-500/30"
-                    : mood === "calm"
-                      ? "bg-green-400/30"
-                      : "bg-slate-400/30"
+              ? "bg-red-500/30"
+              : mood === "funny"
+              ? "bg-yellow-400/30"
+              : mood === "sad"
+              ? "bg-blue-500/30"
+              : mood === "calm"
+              ? "bg-green-400/30"
+              : "bg-slate-400/30"
           }`}
           animate={{
             scale: [1, 1.1, 1],
             rotate: mood === "rage" ? [0, 5, -5, 0] : 0,
+            opacity: [0.8, 1, 0.8], // <-- Opacity animation here
           }}
           transition={{
             duration: 2,
