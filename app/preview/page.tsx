@@ -31,7 +31,9 @@ import {
   Users,
   Pencil,
   Trash2,
-  Plus
+  Plus,
+  MessageCircle,
+  Check
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
@@ -47,6 +49,7 @@ import EffectPreview from "@/components/create/effect-preview"
 import { getExitPageData, type ExitPageData } from "@/lib/exit-page-store"
 import html2canvas from "html2canvas"
 import { Separator } from "@/components/ui/separator"
+import FormModal from "@/components/ui/form-modal"
 
 const REACTION_EMOJIS = ["👍", "❤️", "😢", "😮", "👏", "🔥"] //test
 
@@ -74,6 +77,23 @@ export default function PreviewPage() {
   const [activeTab, setActiveTab] = useState("message")
   const [localStorageAvailable, setLocalStorageAvailable] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false)
+  const [showPlanModal, setShowPlanModal] = useState(false)
+  const [showAchievementModal, setShowAchievementModal] = useState(false)
+  const [editingMilestone, setEditingMilestone] = useState<any>(null)
+  const [editingPlan, setEditingPlan] = useState<any>(null)
+  const [editingAchievement, setEditingAchievement] = useState<any>(null)
+  const [showShareSection, setShowShareSection] = useState(false)
+
+  // Add achievements state
+  const [achievements, setAchievements] = useState([
+    {
+      id: 1,
+      title: "Increased team productivity by 35%",
+      description: "Through process improvements and automation",
+      color: "green"
+    }
+  ])
 
   // Check if localStorage is available
   const checkLocalStorageAvailability = () => {
@@ -175,13 +195,21 @@ export default function PreviewPage() {
       loadTimelineFromLocalStorage();
     }
 
+    // Load achievements from localStorage if available
+    if (localStorageAvailable) {
+      const savedAchievements = localStorage.getItem('exit_page_achievements')
+      if (savedAchievements) {
+        setAchievements(JSON.parse(savedAchievements))
+      }
+    }
+
     // Cleanup function to remove event listeners and clear timers
     return () => {
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(moodTransitionTimer);
       clearTimeout(doorSlamTimer);
     };
-  }, [isMuted]); // Add isMuted to dependency array for the door slam effect
+  }, [isMuted, localStorageAvailable]); // Add isMuted and localStorageAvailable to dependency array for the door slam effect
 
   // Define localStorage functions outside of useEffect
   const saveCommentsToLocalStorage = (comments: any[], reactions: Record<number, string[]>, liked: number[] = likedComments) => {
@@ -457,18 +485,7 @@ export default function PreviewPage() {
   }
 
   const generateUniqueLink = () => {
-    // Generate a slug from the title or use a random string
-    const titleSlug = exitPageData?.title 
-      ? exitPageData.title.toLowerCase()
-          .replace(/[^a-z0-9\s]/g, '')
-          .replace(/\s+/g, '-')
-      : 'dramatic-exit'
-    
-    // Add a random component to ensure uniqueness
-    const randomString = Math.random().toString(36).substring(2, 8)
-    
-    // Combine components to create a unique but readable URL
-    return `theend.page/${titleSlug}-${randomString}`
+    return "codewaresreload.maurice.webcup.hodi.host/exit-r6tgsr"
   }
 
   const currentMusic = getMusicForMood(mood)
@@ -538,27 +555,36 @@ export default function PreviewPage() {
   }
 
   const handleAddMilestone = (newMilestone: any) => {
+    const icon = newMilestone.iconType === "star" ? <Star className="h-5 w-5 text-yellow-400" /> :
+                newMilestone.iconType === "award" ? <Award className="h-5 w-5 text-emerald-400" /> :
+                newMilestone.iconType === "users" ? <Users className="h-5 w-5 text-blue-400" /> :
+                <Briefcase className="h-5 w-5 text-indigo-400" />
+
     const updatedMilestones = [...milestones, {
       ...newMilestone,
-      id: milestones.length + 1
-    }];
-    setMilestones(updatedMilestones);
+      id: milestones.length + 1,
+      icon
+    }]
+    setMilestones(updatedMilestones)
     
-    // Save to localStorage
     if (localStorageAvailable) {
-      saveTimelineToLocalStorage(updatedMilestones, futurePlans);
+      saveTimelineToLocalStorage(updatedMilestones, futurePlans)
     }
   }
 
   const handleEditMilestone = (id: number, updatedData: any) => {
+    const icon = updatedData.iconType === "star" ? <Star className="h-5 w-5 text-yellow-400" /> :
+                updatedData.iconType === "award" ? <Award className="h-5 w-5 text-emerald-400" /> :
+                updatedData.iconType === "users" ? <Users className="h-5 w-5 text-blue-400" /> :
+                <Briefcase className="h-5 w-5 text-indigo-400" />
+
     const updatedMilestones = milestones.map(milestone => 
-      milestone.id === id ? { ...milestone, ...updatedData } : milestone
-    );
-    setMilestones(updatedMilestones);
+      milestone.id === id ? { ...milestone, ...updatedData, icon } : milestone
+    )
+    setMilestones(updatedMilestones)
     
-    // Save to localStorage
     if (localStorageAvailable) {
-      saveTimelineToLocalStorage(updatedMilestones, futurePlans);
+      saveTimelineToLocalStorage(updatedMilestones, futurePlans)
     }
   }
 
@@ -607,128 +633,46 @@ export default function PreviewPage() {
     }
   }
 
+  // Add achievement handlers
+  const handleAddAchievement = (newAchievement: any) => {
+    const updatedAchievements = [...achievements, {
+      ...newAchievement,
+      id: achievements.length + 1
+    }]
+    setAchievements(updatedAchievements)
+    
+    if (localStorageAvailable) {
+      localStorage.setItem('exit_page_achievements', JSON.stringify(updatedAchievements))
+    }
+  }
+
+  const handleEditAchievement = (id: number, updatedData: any) => {
+    const updatedAchievements = achievements.map(achievement => 
+      achievement.id === id ? { ...achievement, ...updatedData } : achievement
+    )
+    setAchievements(updatedAchievements)
+    
+    if (localStorageAvailable) {
+      localStorage.setItem('exit_page_achievements', JSON.stringify(updatedAchievements))
+    }
+  }
+
+  const handleDeleteAchievement = (id: number) => {
+    const updatedAchievements = achievements.filter(achievement => achievement.id !== id)
+    setAchievements(updatedAchievements)
+    
+    if (localStorageAvailable) {
+      localStorage.setItem('exit_page_achievements', JSON.stringify(updatedAchievements))
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white overflow-hidden">
       {/* Style tag for custom animation */}
       <style jsx>{fadeInOutStyle}</style>
-        {/* Hero section with enhanced parallax effect */}
-      <motion.div 
-        className="h-[100vh] relative overflow-hidden"
-        style={{ opacity, scale }}
-      >
-        <div className={`absolute inset-0 bg-gradient-to-b ${getMoodColor()} opacity-50`}></div>
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1509023464722-18d996393ca8?q=80&w=1470&auto=format&fit=crop')] bg-cover bg-center opacity-25 parallax-bg"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_0%,rgba(0,0,0,0.4)_100%)]"></div>
-        <EnhancedParticles mood={mood} intensity="high" />
-        
-        <div className="absolute inset-0 flex items-center justify-center flex-col text-center p-4">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="mb-4"
-          >
-            <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-full px-5 py-2 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-white/80" />
-              <span className="text-sm font-medium text-white/80">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            </div>
-          </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className={`text-6xl md:text-8xl font-black mb-6 ${getMoodTextColor()} drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]`}
-            style={{
-              animation: "float 6s ease-in-out infinite"
-            }}
-          >
-            {exitPageData?.title || "My Dramatic Exit"}
-          </motion.h1>
-          
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="max-w-md mx-auto"
-          >
-            <p className="text-xl md:text-2xl font-light text-white/90">
-              A grand farewell from the stage of corporate life.
-            </p>
-          </motion.div>
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="mt-12"
-          >
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={() => document.getElementById('content-section')?.scrollIntoView({behavior: 'smooth'})}
-              className="backdrop-blur-md bg-white/10 border-white/20 hover:bg-white/20 text-white rounded-full px-6 font-medium"
-            >
-              Read My Story
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </motion.div>
-        </div>
-        
-        {/* Scroll indicator */}
-        <motion.div 
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
-          animate={{ 
-            y: [0, 10, 0],
-            opacity: [0.4, 1, 0.4]
-          }}
-          transition={{ 
-            y: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
-            opacity: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
-          }}
-        >
-          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2">
-            <motion.div 
-              className="w-1.5 h-1.5 rounded-full bg-white" 
-              animate={{ y: [0, 12, 0] }}
-              transition={{ 
-                repeat: Infinity,
-                duration: 1.5,
-                ease: "easeInOut",
-              }}
-            />
-          </div>
-        </motion.div>
-        
-        <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-slate-900 to-transparent"></div>
-      </motion.div>
 
-      {/* Background particles for the entire page */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <EnhancedParticles mood={mood} intensity="low" />
-      </div>
-
-      {/* Mood transition effect */}
-      <MoodTransition mood={mood} previousMood={previousMood ?? undefined} isActive={showMoodTransition} />
-      
-      {/* Audio player */}      <AudioPlayer
-        src={currentMusic.src}
-        autoPlay={true}
-        loop={true}
-        volume={0.2}
-        className="fixed bottom-4 right-4 z-50"
-        showTitle={true}
-        title={currentMusic.title}
-        artist={currentMusic.artist}
-      />
-      
-      {/* Navigation bar */}
-      <div 
-        ref={navbarRef}
-        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-          hasScrolled ? "backdrop-blur-sm bg-slate-900/30 border-b border-white/5 shadow-sm" : "bg-transparent"
-        }`}
-      >
+      {/* Navigation controls at the very top */}
+      <div className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm bg-slate-900/30 border-b border-white/5 shadow-sm">
         <div className="max-w-screen-2xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
           <Button variant="ghost" onClick={() => router.push("/create")} className="text-white hover:bg-white/10 rounded-full transition-all duration-200 flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -826,393 +770,519 @@ export default function PreviewPage() {
             </Popover>            
             <ThemeToggle />
           </div>
-        </div>      </div>
+        </div>
+      </div>
+
+      {/* Hero section with enhanced parallax effect */}
+      <motion.div 
+        className="h-[100vh] relative overflow-hidden"
+        style={{ opacity, scale }}
+      >
+        <div className={`absolute inset-0 bg-gradient-to-b ${getMoodColor()} opacity-50`}></div>
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1509023464722-18d996393ca8?q=80&w=1470&auto=format&fit=crop')] bg-cover bg-center opacity-25 parallax-bg"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0)_0%,rgba(0,0,0,0.4)_100%)]"></div>
+        <EnhancedParticles mood={mood} intensity="high" />
+        
+        <div className="absolute inset-0 flex items-center justify-center flex-col text-center p-4">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="mb-4"
+          >
+            <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-full px-5 py-2 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-white/80" />
+              <span className="text-sm font-medium text-white/80">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className={`text-6xl md:text-8xl font-black mb-6 ${getMoodTextColor()} drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]`}
+            style={{
+              animation: "float 6s ease-in-out infinite"
+            }}
+          >
+            {exitPageData?.title || "My Dramatic Exit"}
+          </motion.h1>
+          
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="max-w-md mx-auto"
+          >
+            <p className="text-xl md:text-2xl font-light text-white/90">
+              A grand farewell from the stage of corporate life.
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="mt-12"
+          >
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={() => {
+                document.getElementById('blog-section')?.scrollIntoView({ behavior: 'smooth' })
+                setActiveTab('message')
+              }}
+              className="backdrop-blur-md bg-white/10 border-white/20 hover:bg-white/20 text-white rounded-full px-6 font-medium"
+            >
+              Read My Story
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </motion.div>
+        </div>
+        
+        {/* Scroll indicator */}
+        <motion.div 
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center"
+          animate={{ 
+            y: [0, 10, 0],
+            opacity: [0.4, 1, 0.4]
+          }}
+          transition={{ 
+            y: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
+            opacity: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
+          }}
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2">
+            <motion.div 
+              className="w-1.5 h-1.5 rounded-full bg-white" 
+              animate={{ y: [0, 12, 0] }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 1.5,
+                ease: "easeInOut",
+              }}
+            />
+          </div>
+        </motion.div>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-slate-900 to-transparent"></div>
+      </motion.div>
+
+      {/* Add this after the hero section and before the content section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-xl mx-auto px-4 -mt-20 relative z-20"
+      >
+        <Card className="glass-morphism border-none overflow-hidden rounded-xl shadow-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 bg-white/5 rounded-lg p-2 border border-white/10">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-mono text-gray-300 truncate">{publicLink}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyLink}
+                className={`h-8 px-3 rounded-md transition-all duration-200 ${
+                  linkCopied 
+                    ? "bg-green-500/20 text-green-400" 
+                    : "hover:bg-white/10"
+                }`}
+              >
+                {linkCopied ? (
+                  <>
+                    <Check className="h-4 w-4 mr-1" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4 mr-1" />
+                    Copy
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Background particles for the entire page */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <EnhancedParticles mood={mood} intensity="low" />
+      </div>
+
+      {/* Mood transition effect */}
+      <MoodTransition mood={mood} previousMood={previousMood ?? undefined} isActive={showMoodTransition} />
+      
+      {/* Audio player */}
+      <AudioPlayer
+        src={currentMusic.src}
+        autoPlay={true}
+        loop={true}
+        volume={0.2}
+        className="fixed bottom-4 right-4 z-50"
+        showTitle={true}
+        title={currentMusic.title}
+        artist={currentMusic.artist}
+      />
 
       {/* Content wrapper with gradient transition */}
       <div className="relative">
         {/* Content section marker for scrolling */}
-        <div id="content-section" className="absolute top-0 h-4 w-full"></div>
+        <div id="blog-section" className="absolute top-0 h-4 w-full"></div>
         
-        <div className="bg-gradient-to-b from-slate-900/20 to-transparent h-12 w-full"></div>
+        <div className="bg-gradient-to-b from-slate-900/20 to-transparent h-8 w-full"></div>
         
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-12 w-full max-w-md mx-auto glass-morphism rounded-full overflow-hidden p-1 border border-white/10 shadow-lg">
-            <TabsTrigger 
-              value="message" 
-              className={`rounded-full py-2.5 transition-all duration-300 ${activeTab === "message" ? "text-white" : "text-white/60"}`}
-            >
-              Message
-            </TabsTrigger>
-            <TabsTrigger 
-              value="timeline" 
-              className={`rounded-full py-2.5 transition-all duration-300 ${activeTab === "timeline" ? "text-white" : "text-white/60"}`}
-            >
-              Timeline
-            </TabsTrigger>
-            <TabsTrigger 
-              value="next" 
-              className={`rounded-full py-2.5 transition-all duration-300 ${activeTab === "next" ? "text-white" : "text-white/60"}`}
-            >
-              What's Next
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="message" className="focus-visible:outline-none focus-visible:ring-0">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Main content */}
-              <div className="lg:col-span-2">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 relative z-10">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="flex items-center justify-between mb-8 w-full max-w-md mx-auto bg-slate-800/40 backdrop-blur-md rounded-full border border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-visible h-14 px-2">
+              <TabsTrigger 
+                value="message" 
+                className={`flex items-center justify-center gap-2 rounded-full h-10 px-5 transition-all duration-300 text-base font-semibold ${
+                  activeTab === "message" 
+                    ? "bg-gradient-to-r from-indigo-500/80 to-purple-500/80 text-white shadow-lg" 
+                    : "text-white/60 hover:text-white/80 hover:bg-white/5"
+                }`}
+              >
+                <MessageCircle className="h-5 w-5" />
+                Message
+              </TabsTrigger>
+              <TabsTrigger 
+                value="timeline" 
+                className={`flex items-center justify-center gap-2 rounded-full h-10 px-5 transition-all duration-300 text-base font-semibold ${
+                  activeTab === "timeline" 
+                    ? "bg-gradient-to-r from-indigo-500/80 to-purple-500/80 text-white shadow-lg" 
+                    : "text-white/60 hover:text-white/80 hover:bg-white/5"
+                }`}
+              >
+                <Clock className="h-5 w-5" />
+                Timeline
+              </TabsTrigger>
+              <TabsTrigger 
+                value="next" 
+                className={`flex items-center justify-center gap-2 rounded-full h-10 px-5 transition-all duration-300 text-base font-semibold ${
+                  activeTab === "next" 
+                    ? "bg-gradient-to-r from-indigo-500/80 to-purple-500/80 text-white shadow-lg" 
+                    : "text-white/60 hover:text-white/80 hover:bg-white/5"
+                }`}
+              >
+                <ArrowRight className="h-5 w-5" />
+                What's Next
+              </TabsTrigger>
+              {/* Pink dot indicator, absolutely positioned */}
+              <span className="absolute top-1/2 right-3 -translate-y-1/2 w-3 h-3 rounded-full bg-pink-400 shadow-lg"></span>
+            </TabsList>
+            
+            <TabsContent value="message" className="focus-visible:outline-none focus-visible:ring-0">
+              <div className="max-w-3xl mx-auto">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 10 }}
                   transition={{ duration: 0.4 }}
                 >
                   <Card className="glass-morphism border-none overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl transition-shadow duration-300" ref={contentRef}>
-                    <CardContent className="p-8 lg:p-10">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-                        <div className="flex items-center space-x-2">
-                          <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse"></div>
-                          <p className="text-xs font-mono text-gray-400">{publicLink}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={toggleMute}
-                                  className="h-8 w-8 rounded-full text-white hover:bg-white/10 transition-colors duration-200"
-                                >
-                                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-slate-800 border-slate-700">
-                                <p>{isMuted ? "Unmute" : "Mute"}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                    <CardContent className="p-0">
+                      {/* Message Header */}
+                      <div className="p-6 border-b border-white/10">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-12 w-12 border-2 border-white/10">
+                              <AvatarImage src="/placeholder.svg" />
+                              <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500">ME</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h2 className="text-xl font-bold">My Farewell Message</h2>
+                              <p className="text-sm text-gray-400">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={toggleMute}
+                                    className="h-8 w-8 rounded-full text-white hover:bg-white/10 transition-colors duration-200"
+                                  >
+                                    {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-slate-800 border-slate-700">
+                                  <p>{isMuted ? "Unmute" : "Mute"}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
 
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8 rounded-full text-white hover:bg-white/10 transition-colors duration-200" 
-                                  onClick={handleCopyLink}
-                                >
-                                  <Copy className={`h-4 w-4 ${linkCopied ? "text-green-400" : ""}`} />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-slate-800 border-slate-700">
-                                <p>{linkCopied ? "Copied!" : "Copy link"}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8 rounded-full text-white hover:bg-white/10 transition-colors duration-200" 
-                                  onClick={handleDownloadAsImage}
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-slate-800 border-slate-700">
-                                <p>Download as image</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8 rounded-full text-white hover:bg-white/10 transition-colors duration-200" 
-                                  onClick={handleShare}
-                                >
-                                  <Share2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-slate-800 border-slate-700">
-                                <p>Share</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 rounded-full text-white hover:bg-white/10 transition-colors duration-200" 
+                                    onClick={handleCopyLink}
+                                  >
+                                    <Copy className={`h-4 w-4 ${linkCopied ? "text-green-400" : ""}`} />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-slate-800 border-slate-700">
+                                  <p>{linkCopied ? "Copied!" : "Copy link"}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
                         </div>
                       </div>
 
-                      <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
-                        transition={{ duration: 0.6 }}
-                      >
-                        <h1 className={`text-4xl md:text-5xl font-extrabold mb-8 ${
-                          exitPageData?.mood === "heartfelt"
-                            ? "text-pink-400"
-                            : exitPageData?.mood === "rage"
-                              ? "text-red-500"
-                              : exitPageData?.mood === "funny"
-                                ? "text-yellow-400"
-                                : exitPageData?.mood === "sad"
-                                  ? "text-blue-400"
-                                  : exitPageData?.mood === "calm"
-                                    ? "text-green-400"
-                                    : "text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500"
-                        }`}>
-                          {exitPageData?.title || "My Dramatic Exit: The Final Curtain Call"}
-                        </h1>                        <div className="prose prose-invert max-w-none mb-10">
-                          {exitPageData?.message ? (
-                            // Render user's message if available
-                            exitPageData.message.split("\n\n").map((paragraph, index) => (
-                              <motion.p
-                                key={index}
-                                className="text-lg md:text-xl leading-relaxed mb-6 font-light"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: 0.2 + (index * 0.1) }}
-                              >
-                                {paragraph}
-                              </motion.p>
-                            ))
-                          ) : (
-                            // Fallback content if no message
-                            <>
-                              <motion.p
-                                className="text-lg md:text-xl leading-relaxed mb-6 font-light"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: 0.2 }}
-                              >
-                                After 5 years of pouring my heart and soul into this company, it's time for the grand finale.
-                                This isn't just a resignation; it's the closing act of a chapter that deserved a standing
-                                ovation but got lukewarm applause instead.
-                              </motion.p>
-
-                              <motion.p
-                                className="text-lg md:text-xl leading-relaxed mb-6 font-light"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: 0.3 }}
-                              >
-                                As I take my final bow, I'm not just walking away – I'm making an exit so spectacular, it'll be
-                                remembered long after the lights dim on my empty desk.
-                              </motion.p>
-
-                              <motion.p
-                                className="text-lg md:text-xl leading-relaxed mb-6 font-light"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: 0.4 }}
-                              >
-                                To those who supported me: thank you for being the audience that kept me going. To those who
-                                didn't: watch as I steal the show one last time.
-                              </motion.p>
-
-                              <motion.p
-                                className="text-lg md:text-xl leading-relaxed font-medium italic"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.4, delay: 0.5 }}
-                              >
-                                The curtain falls, but my story continues on a grander stage.
-                              </motion.p>
-                            </>
-                          )}
-                        </div>
-
-                        {/* GIF section with improved design */}
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.4, delay: 0.6 }}
-                          className="mb-10 overflow-hidden rounded-xl shadow-lg border border-white/10 relative group"
+                      {/* Message Content */}
+                      <div className="p-6">
+                        <motion.div 
+                          initial={{ opacity: 0 }} 
+                          animate={{ opacity: 1 }} 
+                          transition={{ duration: 0.6 }}
                         >
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          <img
-                            src="https://media.giphy.com/media/l0MYGb1LuZ3n7dRnO/giphy.gif"
-                            alt="Dramatic exit GIF"
-                            className="w-full h-80 object-cover"
-                          />
-                          <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-md text-xs text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            Dramatic exit moment
+                          <h1 className={`text-4xl md:text-5xl font-extrabold mb-8 ${
+                            exitPageData?.mood === "heartfelt"
+                              ? "text-pink-400"
+                              : exitPageData?.mood === "rage"
+                                ? "text-red-500"
+                                : exitPageData?.mood === "funny"
+                                  ? "text-yellow-400"
+                                  : exitPageData?.mood === "sad"
+                                    ? "text-blue-400"
+                                    : exitPageData?.mood === "calm"
+                                      ? "text-green-400"
+                                      : "text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500"
+                          }`}>
+                            {exitPageData?.title || "My Dramatic Exit: The Final Curtain Call"}
+                          </h1>
+
+                          <div className="prose prose-invert max-w-none mb-10">
+                            {exitPageData?.message ? (
+                              exitPageData.message.split("\n\n").map((paragraph, index) => (
+                                <motion.p
+                                  key={index}
+                                  className="text-lg md:text-xl leading-relaxed mb-6 font-light"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.4, delay: 0.2 + (index * 0.1) }}
+                                >
+                                  {paragraph}
+                                </motion.p>
+                              ))
+                            ) : (
+                              // Fallback content if no message
+                              <>
+                                <motion.p
+                                  className="text-lg md:text-xl leading-relaxed mb-6 font-light"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.4, delay: 0.2 }}
+                                >
+                                  After 5 years of pouring my heart and soul into this company, it's time for the grand finale.
+                                  This isn't just a resignation; it's the closing act of a chapter that deserved a standing
+                                  ovation but got lukewarm applause instead.
+                                </motion.p>
+
+                                <motion.p
+                                  className="text-lg md:text-xl leading-relaxed mb-6 font-light"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.4, delay: 0.3 }}
+                                >
+                                  As I take my final bow, I'm not just walking away – I'm making an exit so spectacular, it'll be
+                                  remembered long after the lights dim on my empty desk.
+                                </motion.p>
+
+                                <motion.p
+                                  className="text-lg md:text-xl leading-relaxed mb-6 font-light"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.4, delay: 0.4 }}
+                                >
+                                  To those who supported me: thank you for being the audience that kept me going. To those who
+                                  didn't: watch as I steal the show one last time.
+                                </motion.p>
+
+                                <motion.p
+                                  className="text-lg md:text-xl leading-relaxed font-medium italic"
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.4, delay: 0.5 }}
+                                >
+                                  The curtain falls, but my story continues on a grander stage.
+                                </motion.p>
+                              </>
+                            )}
                           </div>
-                        </motion.div>
 
-                        {/* Social sharing buttons */}
-                        <div className="flex flex-wrap gap-3 justify-center mb-10">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleShareToSocial('twitter')}
-                            className="bg-[#1DA1F2]/10 border-[#1DA1F2]/30 hover:bg-[#1DA1F2]/20 text-white rounded-full px-5 py-2 transition-colors duration-200"
+                          {/* GIF section with improved design */}
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.4, delay: 0.6 }}
+                            className="mb-10"
                           >
-                            <Twitter className="h-4 w-4 mr-2" />
-                            Share on Twitter
-                          </Button>
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleShareToSocial('linkedin')}
-                            className="bg-[#0077B5]/10 border-[#0077B5]/30 hover:bg-[#0077B5]/20 text-white rounded-full px-5 py-2 transition-colors duration-200"
-                          >
-                            <Linkedin className="h-4 w-4 mr-2" />
-                            Share on LinkedIn
-                          </Button>
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleShareToSocial('facebook')}
-                            className="bg-[#1877F2]/10 border-[#1877F2]/30 hover:bg-[#1877F2]/20 text-white rounded-full px-5 py-2 transition-colors duration-200"
-                          >
-                            <Facebook className="h-4 w-4 mr-2" />
-                            Share on Facebook
-                          </Button>
-                        </div>
-
-                        <div className="text-center">
-                          <p className="text-xs text-gray-400">
-                            This exit page was created on {new Date().toLocaleDateString()} • Powered by TheEnd
-                          </p>
-                        </div>
-                      </motion.div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </div>
-
-              {/* Comments section - right side */}
-              <div className="lg:col-span-1">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: isLoaded ? 1 : 0, y: isLoaded ? 0 : 10 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                >
-                  <Card className="glass-morphism border-none rounded-2xl shadow-xl sticky top-24">
-                    <CardContent className="p-6">
-                      <h2 className="text-xl font-semibold mb-6 flex items-center">
-                        <MessageSquare className="mr-2 h-5 w-5 text-indigo-400" />
-                        Comments ({comments.length})
-                      </h2>
-
-                      <div className="space-y-4 mb-5 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-                        <AnimatePresence>
-                          {comments.map((comment, index) => (
-                            <motion.div
-                              key={comment.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.3, delay: index * 0.1 }}
-                              className="bg-white/5 hover:bg-white/10 transition-all duration-300 rounded-xl p-4 border border-white/5 hover:border-white/10"
-                            >
-                              <div className="flex items-start gap-3">
-                                <Avatar className="h-9 w-9 border-2 border-white/10 shadow-md">
-                                  <AvatarImage src={"/placeholder.svg"} />
-                                  <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500">{comment.author.name[0]}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex justify-between items-center">
-                                    <p className="text-sm font-semibold">{comment.author.name}</p>
-                                    <p className="text-xs text-gray-400">{comment.timestamp}</p>
-                                  </div>
-                                  <p className="text-sm text-gray-300 mt-1 break-words leading-relaxed">{comment.content}</p>
-
-                                  <div className="flex flex-wrap items-center gap-1.5 mt-3">
-                                    {/* Reaction emojis */}
-                                    <div className="flex -space-x-1 mr-2">
-                                      {(commentReactions[comment.id] || []).slice(0, 3).map((emoji, i) => (
-                                        <div 
-                                          key={i} 
-                                          className="w-5 h-5 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-xs shadow-md border border-white/10"
-                                        >
-                                          {emoji}
-                                        </div>
-                                      ))}
-                                      {(commentReactions[comment.id] || []).length > 3 && (
-                                        <div className="w-5 h-5 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-xs shadow-md border border-white/10">
-                                          +{(commentReactions[comment.id] || []).length - 3}
-                                        </div>
-                                      )}
+                            {exitPageData?.gifs && exitPageData.gifs.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {exitPageData.gifs.map((gif, index) => (
+                                  <div key={index} className="overflow-hidden rounded-xl shadow-lg border border-white/10 relative group">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <img
+                                      src={gif}
+                                      alt={`Selected GIF ${index + 1}`}
+                                      className="w-full h-80 object-cover"
+                                    />
+                                    <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-md text-xs text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                      Selected GIF {index + 1}
                                     </div>
-                                    
-                                    <Popover>
-                                      <PopoverTrigger asChild>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="overflow-hidden rounded-xl shadow-lg border border-white/10 relative group">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <img
+                                  src="https://media.giphy.com/media/l0MYGb1LuZ3n7dRnO/giphy.gif"
+                                  alt="Dramatic exit GIF"
+                                  className="w-full h-80 object-cover"
+                                />
+                                <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-md text-xs text-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                  Dramatic exit moment
+                                </div>
+                              </div>
+                            )}
+                          </motion.div>
+                        </motion.div>
+                      </div>
+
+                      {/* Comments Section */}
+                      <div className="border-t border-white/10">
+                        <div className="p-6">
+                          <h3 className="text-lg font-semibold mb-4 flex items-center">
+                            <MessageSquare className="mr-2 h-5 w-5 text-indigo-400" />
+                            Comments ({comments.length})
+                          </h3>
+
+                          {/* Comment Input */}
+                          <div className="mb-6">
+                            <div className="flex gap-3 items-start">
+                              <Avatar className="h-8 w-8 flex-shrink-0">
+                                <AvatarImage src="/placeholder.svg" />
+                                <AvatarFallback className="bg-gradient-to-br from-violet-500 to-purple-500">Y</AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <Input
+                                  value={comment}
+                                  onChange={(e) => setComment(e.target.value)}
+                                  placeholder="Write a comment..."
+                                  className="bg-white/5 border-white/10 focus:border-white/20 rounded-xl"
+                                />
+                                <div className="flex justify-end mt-2">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-8 px-3 rounded-full bg-indigo-500/80 hover:bg-indigo-500 text-white"
+                                    onClick={handleSendComment}
+                                    disabled={!comment.trim()}
+                                  >
+                                    <Send className="h-4 w-4 mr-1" />
+                                    Post
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Comments List */}
+                          <div className="space-y-4">
+                            <AnimatePresence>
+                              {comments.map((comment, index) => (
+                                <motion.div
+                                  key={comment.id}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                                  className="bg-white/5 hover:bg-white/10 transition-all duration-300 rounded-xl p-4 border border-white/5 hover:border-white/10"
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <Avatar className="h-9 w-9 border-2 border-white/10 shadow-md">
+                                      <AvatarImage src={"/placeholder.svg"} />
+                                      <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500">{comment.author.name[0]}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex justify-between items-center">
+                                        <p className="text-sm font-semibold">{comment.author.name}</p>
+                                        <p className="text-xs text-gray-400">{comment.timestamp}</p>
+                                      </div>
+                                      <p className="text-sm text-gray-300 mt-1 break-words leading-relaxed">{comment.content}</p>
+
+                                      <div className="flex flex-wrap items-center gap-1.5 mt-3">
+                                        {/* Reaction emojis */}
+                                        <div className="flex -space-x-1 mr-2">
+                                          {(commentReactions[comment.id] || []).slice(0, 3).map((emoji, i) => (
+                                            <div 
+                                              key={i} 
+                                              className="w-5 h-5 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-xs shadow-md border border-white/10"
+                                            >
+                                              {emoji}
+                                            </div>
+                                          ))}
+                                          {(commentReactions[comment.id] || []).length > 3 && (
+                                            <div className="w-5 h-5 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-xs shadow-md border border-white/10">
+                                              +{(commentReactions[comment.id] || []).length - 3}
+                                            </div>
+                                          )}
+                                        </div>
+                                        
+                                        <Popover>
+                                          <PopoverTrigger asChild>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-7 px-2 text-xs hover:bg-white/10 rounded-full transition-colors duration-200"
+                                            >
+                                              <Smile className="h-3 w-3 mr-1" />
+                                              React
+                                            </Button>
+                                          </PopoverTrigger>
+                                          <PopoverContent className="w-auto p-2 flex gap-1 bg-slate-800/90 backdrop-blur-md border-slate-700">
+                                            {REACTION_EMOJIS.map((emoji) => (
+                                              <Button
+                                                key={emoji}
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleAddReaction(comment.id, emoji)}
+                                                className={`px-1.5 py-1 hover:bg-white/10 transition-colors duration-200 ${
+                                                  (commentReactions[comment.id] || []).includes(emoji) 
+                                                    ? "bg-white/10" 
+                                                    : ""
+                                                }`}
+                                              >
+                                                {emoji}
+                                              </Button>
+                                            ))}
+                                          </PopoverContent>
+                                        </Popover>
+
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          className="h-7 px-2 text-xs hover:bg-white/10 rounded-full transition-colors duration-200"
+                                          className={`h-7 px-2 text-xs ${likedComments.includes(comment.id) ? "text-pink-500" : "text-gray-400"} hover:bg-white/10 rounded-full transition-colors duration-200`}
+                                          onClick={() => handleLikeComment(comment.id)}
                                         >
-                                          <Smile className="h-3 w-3 mr-1" />
-                                          React
+                                          <Heart className={`h-3 w-3 mr-1 ${likedComments.includes(comment.id) ? "fill-pink-500" : ""}`} />
+                                          {comment.likes}
                                         </Button>
-                                      </PopoverTrigger>
-                                      <PopoverContent className="w-auto p-2 flex gap-1 bg-slate-800/90 backdrop-blur-md border-slate-700">
-                                        {REACTION_EMOJIS.map((emoji) => (
-                                          <Button
-                                            key={emoji}
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleAddReaction(comment.id, emoji)}
-                                            className={`px-1.5 py-1 hover:bg-white/10 transition-colors duration-200 ${
-                                              (commentReactions[comment.id] || []).includes(emoji) 
-                                                ? "bg-white/10" 
-                                                : ""
-                                            }`}
-                                          >
-                                            {emoji}
-                                          </Button>
-                                        ))}
-                                      </PopoverContent>
-                                    </Popover>
-
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className={`h-7 px-2 text-xs ${likedComments.includes(comment.id) ? "text-pink-500" : "text-gray-400"} hover:bg-white/10 rounded-full transition-colors duration-200`}
-                                      onClick={() => handleLikeComment(comment.id)}
-                                    >
-                                      <Heart className={`h-3 w-3 mr-1 ${likedComments.includes(comment.id) ? "fill-pink-500" : ""}`} />
-                                      {comment.likes}
-                                    </Button>
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </AnimatePresence>
-                      </div>                      <div className="pt-3 border-t border-white/10">
-                        <div className="flex gap-2 items-center">
-                          <Avatar className="h-8 w-8 flex-shrink-0">
-                            <AvatarImage src="/placeholder.svg" />
-                            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-purple-500">Y</AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-1 items-center overflow-hidden">
-                            <div className="relative flex-1">
-                              <Input
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                placeholder="Add a comment..."
-                                className="pr-4 bg-white/5 border-white/10 focus:border-white/20 rounded-full"
-                              />
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="ml-2 h-7 px-2 py-1 rounded-full bg-indigo-500/80 hover:bg-indigo-500 text-white flex-shrink-0"
-                              onClick={handleSendComment}
-                              disabled={!comment.trim()}
-                            >
-                              <Send className="h-3 w-3" />
-                            </Button>
+                                </motion.div>
+                              ))}
+                            </AnimatePresence>
                           </div>
                         </div>
                       </div>
@@ -1220,106 +1290,157 @@ export default function PreviewPage() {
                   </Card>
                 </motion.div>
               </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="timeline" className="focus-visible:outline-none focus-visible:ring-0">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold flex items-center">
-                  <Clock className="mr-2 h-5 w-5 text-indigo-400" />
-                  My Journey
-                </h2>
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/5 backdrop-blur-md rounded-full px-4 py-1.5 text-sm font-medium border border-white/10">
-                    2020 - 2024
+            </TabsContent>
+            
+            <TabsContent value="timeline" className="focus-visible:outline-none focus-visible:ring-0">
+              <div className="max-w-4xl mx-auto">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold flex items-center">
+                    <Clock className="mr-2 h-5 w-5 text-indigo-400" />
+                    My Journey
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/5 backdrop-blur-md rounded-full px-4 py-1.5 text-sm font-medium border border-white/10">
+                      2020 - 2024
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full border-indigo-400/30 hover:bg-indigo-500/20 text-indigo-300"
+                      onClick={() => {
+                        setEditingMilestone(null)
+                        setShowMilestoneModal(true)
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Milestone
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full border-indigo-400/30 hover:bg-indigo-500/20 text-indigo-300"
-                    onClick={() => {
-                      const title = prompt("Enter milestone title:");
-                      const description = prompt("Enter milestone description:");
-                      const date = prompt("Enter milestone date (e.g., June 2023):");
-                      const iconOption = prompt("Choose icon (1: Briefcase, 2: Star, 3: Award, 4: Users):", "1");
-                      
-                      if (title && description && date) {
-                        let icon;
-                        switch(iconOption) {
-                          case "2": icon = <Star className="h-5 w-5 text-yellow-400" />; break;
-                          case "3": icon = <Award className="h-5 w-5 text-emerald-400" />; break;
-                          case "4": icon = <Users className="h-5 w-5 text-blue-400" />; break;
-                          default: icon = <Briefcase className="h-5 w-5 text-indigo-400" />; break;
-                        }
-                        
-                        handleAddMilestone({
-                          title,
-                          description,
-                          date,
-                          icon
-                        });
-                      }
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Milestone
-                  </Button>
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  className="relative"
-                >
-                  <div className="hidden md:block absolute top-0 bottom-0 left-1/2 w-0.5 bg-gradient-to-b from-indigo-500/80 via-purple-500/50 to-transparent"></div>
-                  
-                  <div className="space-y-12">
-                    {milestones.map((milestone, index) => (
-                      <motion.div 
-                        key={milestone.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: 0.2 + (index * 0.1) }}
-                        className="relative"
-                      >
-                        <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                          <div className="w-10 h-10 rounded-full border-4 border-slate-900 bg-indigo-500 flex items-center justify-center shadow-lg">
-                            {milestone.icon}
-                          </div>
-                        </div>
-                          <div className={`md:w-1/2 ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12 md:ml-auto'}`}>
-                          <div className="bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-6 shadow-xl transition-all duration-300 hover:shadow-indigo-500/10 hover:scale-[1.02] group h-full relative">
-                            <div className="flex md:hidden items-center gap-3 mb-3">
-                              <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center shadow-md">
-                                {milestone.icon}
-                              </div>
-                              <p className="text-xs font-semibold text-indigo-300">{milestone.date}</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="relative"
+                  >
+                    <div className="hidden md:block absolute top-0 bottom-0 left-1/2 w-0.5 bg-gradient-to-b from-indigo-500/80 via-purple-500/50 to-transparent"></div>
+                    
+                    <div className="space-y-12">
+                      {milestones.map((milestone, index) => (
+                        <motion.div 
+                          key={milestone.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: 0.2 + (index * 0.1) }}
+                          className="relative"
+                        >
+                          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                            <div className="w-10 h-10 rounded-full border-4 border-slate-900 bg-indigo-500 flex items-center justify-center shadow-lg">
+                              {milestone.icon}
                             </div>
-                            
-                            {/* Edit/Delete controls */}
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
+                          </div>
+                            <div className={`md:w-1/2 ${index % 2 === 0 ? 'md:pr-12' : 'md:pl-12 md:ml-auto'}`}>
+                            <div className="bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-6 shadow-xl transition-all duration-300 hover:shadow-indigo-500/10 hover:scale-[1.02] group h-full relative">
+                              <div className="flex md:hidden items-center gap-3 mb-3">
+                                <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center shadow-md">
+                                  {milestone.icon}
+                                </div>
+                                <p className="text-xs font-semibold text-indigo-300">{milestone.date}</p>
+                              </div>
+                              
+                              {/* Edit/Delete controls */}
+                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-7 w-7 rounded-full hover:bg-white/20"
+                                  onClick={() => {
+                                    setEditingMilestone(milestone)
+                                    setShowMilestoneModal(true)
+                                  }}
+                                >
+                                  <Pencil className="h-3.5 w-3.5 text-gray-400" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-7 w-7 rounded-full hover:bg-white/20"
+                                  onClick={() => {
+                                    if (confirm("Are you sure you want to delete this milestone?")) {
+                                      handleDeleteMilestone(milestone.id);
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-gray-400" />
+                                </Button>
+                              </div>
+                              
+                              <p className="hidden md:block text-sm font-semibold text-indigo-300 mb-2">{milestone.date}</p>
+                              <h3 className="text-xl font-bold mb-2 group-hover:text-white transition-colors duration-300">{milestone.title}</h3>
+                              <p className="text-gray-300">{milestone.description}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="p-6 bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl border border-indigo-500/20 shadow-xl"
+                  >
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center mr-4">
+                          <Award className="h-6 w-6 text-indigo-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">Key Achievements</h3>
+                          <p className="text-gray-400 text-sm">What I'm proud of</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full border-indigo-400/30 hover:bg-indigo-500/20 text-indigo-300"
+                        onClick={() => {
+                          setEditingAchievement(null)
+                          setShowAchievementModal(true)
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Achievement
+                      </Button>
+                    </div>
+                    
+                    <ul className="space-y-4">
+                      {achievements.map((achievement) => (
+                        <motion.li 
+                          key={achievement.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="group relative"
+                        >
+                          <div className="flex items-start">
+                            <div className={`w-6 h-6 rounded-full bg-${achievement.color}-500/20 flex items-center justify-center mr-3 mt-0.5`}>
+                              <div className={`w-2 h-2 rounded-full bg-${achievement.color}-500`}></div>
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium">{achievement.title}</p>
+                              <p className="text-sm text-gray-400">{achievement.description}</p>
+                            </div>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1 ml-2">
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-7 w-7 rounded-full hover:bg-white/20"
+                                className="h-7 w-7 rounded-full hover:bg-white/10"
                                 onClick={() => {
-                                  // In a real app, this would open an edit modal
-                                  // For simplicity, we'll use a prompt
-                                  const newTitle = prompt("Edit milestone title:", milestone.title);
-                                  const newDesc = prompt("Edit milestone description:", milestone.description);
-                                  const newDate = prompt("Edit milestone date:", milestone.date);
-                                  
-                                  if (newTitle || newDesc || newDate) {
-                                    handleEditMilestone(milestone.id, {
-                                      title: newTitle || milestone.title,
-                                      description: newDesc || milestone.description,
-                                      date: newDate || milestone.date
-                                    });
-                                  }
+                                  setEditingAchievement(achievement)
+                                  setShowAchievementModal(true)
                                 }}
                               >
                                 <Pencil className="h-3.5 w-3.5 text-gray-400" />
@@ -1327,233 +1448,212 @@ export default function PreviewPage() {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-7 w-7 rounded-full hover:bg-white/20"
+                                className="h-7 w-7 rounded-full hover:bg-white/10"
                                 onClick={() => {
-                                  if (confirm("Are you sure you want to delete this milestone?")) {
-                                    handleDeleteMilestone(milestone.id);
+                                  if (confirm("Are you sure you want to delete this achievement?")) {
+                                    handleDeleteAchievement(achievement.id)
                                   }
                                 }}
                               >
                                 <Trash2 className="h-3.5 w-3.5 text-gray-400" />
                               </Button>
                             </div>
-                            
-                            <p className="hidden md:block text-sm font-semibold text-indigo-300 mb-2">{milestone.date}</p>
-                            <h3 className="text-xl font-bold mb-2 group-hover:text-white transition-colors duration-300">{milestone.title}</h3>
-                            <p className="text-gray-300">{milestone.description}</p>
+                          </div>
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="next" className="focus-visible:outline-none focus-visible:ring-0">
+              <div className="max-w-5xl mx-auto">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold flex items-center">
+                    <ArrowRight className="mr-2 h-5 w-5 text-indigo-400" />
+                    What's Next For Me
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/5 backdrop-blur-md rounded-full px-4 py-1.5 text-sm font-medium border border-white/10">
+                      Future Plans
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full border-indigo-400/30 hover:bg-indigo-500/20 text-indigo-300"
+                      onClick={() => {
+                        setEditingPlan(null)
+                        setShowPlanModal(true)
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Plan
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {futurePlans.map((plan, index) => (
+                    <motion.div
+                      key={plan.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.1 + (index * 0.1) }}
+                    >
+                      <div className="h-full bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm rounded-2xl border border-white/5 overflow-hidden group hover:border-indigo-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/10">
+                        <div className="h-32 bg-gradient-to-r from-indigo-600 to-purple-600 relative overflow-hidden">
+                          <div className="absolute inset-0 opacity-30">
+                            <EnhancedParticles mood="default" intensity="low" />
+                          </div>
+                          <div className="absolute top-4 left-4">
+                            {index === 0 ? (
+                              <MapPin className="h-6 w-6 text-white" />
+                            ) : index === 1 ? (
+                              <Briefcase className="h-6 w-6 text-white" />
+                            ) : (
+                              <Users className="h-6 w-6 text-white" />
+                            )}
+                          </div>
+                          {/* Edit/Delete controls for future plans */}
+                          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1 z-10">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setEditingPlan(plan)
+                                setShowPlanModal(true)
+                              }}
+                            >
+                              <Pencil className="h-3.5 w-3.5 text-white" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (confirm("Are you sure you want to delete this plan?")) {
+                                  handleDeleteFuturePlan(plan.id)
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-white" />
+                            </Button>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-900 to-transparent"></div>
+                        </div>
+                        
+                        <div className="p-6 relative -mt-6">
+                          <h3 className="text-xl font-bold mb-3 group-hover:text-indigo-300 transition-colors duration-300">{plan.title}</h3>
+                          <p className="text-gray-300">{plan.description}</p>
+                          
+                          <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
+                            <span className="text-xs text-gray-400">
+                              {index === 0 ? "Starting June 2025" : index === 1 ? "Late 2025" : "Ongoing"}
+                            </span>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 rounded-full px-3 hover:bg-white/10 text-indigo-300"
+                            >
+                              Learn more
+                              <ArrowRight className="ml-1 h-3 w-3" />
+                            </Button>
                           </div>
                         </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
                 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="p-6 bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-sm rounded-2xl border border-indigo-500/20 shadow-xl"
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="mt-12 p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 text-center"
                 >
-                  <div className="flex items-center mb-5">
-                    <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center mr-4">
-                      <Award className="h-6 w-6 text-indigo-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold">Key Achievements</h3>
-                      <p className="text-gray-400 text-sm">What I'm proud of</p>
-                    </div>
-                  </div>
+                  <h3 className="text-2xl font-bold mb-3">Want to stay connected?</h3>
+                  <p className="text-gray-300 max-w-2xl mx-auto mb-6">
+                    This isn't goodbye, it's just a new chapter. Let's keep in touch as I embark on this new journey.
+                  </p>
                   
-                  <ul className="space-y-4">
-                    <li className="flex items-start">
-                      <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center mr-3 mt-0.5">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      </div>
-                      <div>
-                        <p className="font-medium">Increased team productivity by 35%</p>
-                        <p className="text-sm text-gray-400">Through process improvements and automation</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mr-3 mt-0.5">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      </div>
-                      <div>
-                        <p className="font-medium">Led 3 major product launches</p>
-                        <p className="text-sm text-gray-400">All delivered on time and within budget</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center mr-3 mt-0.5">
-                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                      </div>
-                      <div>
-                        <p className="font-medium">Mentored 5 junior developers</p>
-                        <p className="text-sm text-gray-400">Who all received promotions within a year</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start">
-                      <div className="w-6 h-6 rounded-full bg-yellow-500/20 flex items-center justify-center mr-3 mt-0.5">
-                        <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                      </div>
-                      <div>
-                        <p className="font-medium">Reduced legacy codebase by 40%</p>
-                        <p className="text-sm text-gray-400">Through strategic refactoring and modernization</p>
-                      </div>
-                    </li>
-                  </ul>
+                  <div className="flex flex-wrap gap-4 justify-center">
+                    <Button variant="outline" className="rounded-full px-6 border-indigo-500/50 hover:bg-indigo-500/20">
+                      <Linkedin className="mr-2 h-4 w-4" />
+                      Connect on LinkedIn
+                    </Button>
+                    <Button variant="outline" className="rounded-full px-6 border-blue-500/50 hover:bg-blue-500/20">
+                      <Twitter className="mr-2 h-4 w-4" />
+                      Follow on Twitter
+                    </Button>
+                    <Button variant="outline" className="rounded-full px-6 border-pink-500/50 hover:bg-pink-500/20">
+                      <Send className="mr-2 h-4 w-4" />
+                      Send me an email
+                    </Button>
+                  </div>
                 </motion.div>
               </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="next" className="focus-visible:outline-none focus-visible:ring-0">
-            <div className="max-w-5xl mx-auto">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold flex items-center">
-                  <ArrowRight className="mr-2 h-5 w-5 text-indigo-400" />
-                  What's Next For Me
-                </h2>
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/5 backdrop-blur-md rounded-full px-4 py-1.5 text-sm font-medium border border-white/10">
-                    Future Plans
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full border-indigo-400/30 hover:bg-indigo-500/20 text-indigo-300"
-                    onClick={() => {
-                      const title = prompt("Enter plan title:");
-                      const description = prompt("Enter plan description:");
-                      
-                      if (title && description) {
-                        handleAddFuturePlan({
-                          title,
-                          description
-                        });
-                      }
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Plan
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {futurePlans.map((plan, index) => (
-                  <motion.div
-                    key={plan.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 + (index * 0.1) }}
-                  >
-                    <div className="h-full bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm rounded-2xl border border-white/5 overflow-hidden group hover:border-indigo-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/10">
-                      <div className="h-32 bg-gradient-to-r from-indigo-600 to-purple-600 relative overflow-hidden">
-                        <div className="absolute inset-0 opacity-30">
-                          <EnhancedParticles mood="default" intensity="low" />
-                        </div>
-                        <div className="absolute top-4 left-4">
-                          {index === 0 ? (
-                            <MapPin className="h-6 w-6 text-white" />
-                          ) : index === 1 ? (
-                            <Briefcase className="h-6 w-6 text-white" />
-                          ) : (
-                            <Users className="h-6 w-6 text-white" />
-                          )}
-                        </div>
-                        {/* Edit/Delete controls for future plans */}
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1 z-10">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const newTitle = prompt("Edit plan title:", plan.title);
-                              const newDesc = prompt("Edit plan description:", plan.description);
-                              
-                              if (newTitle || newDesc) {
-                                handleEditFuturePlan(plan.id, {
-                                  title: newTitle || plan.title,
-                                  description: newDesc || plan.description
-                                });
-                              }
-                            }}
-                          >
-                            <Pencil className="h-3.5 w-3.5 text-white" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7 rounded-full bg-black/30 hover:bg-black/50"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm("Are you sure you want to delete this plan?")) {
-                                handleDeleteFuturePlan(plan.id);
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 text-white" />
-                          </Button>
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-900 to-transparent"></div>
-                      </div>
-                      
-                      <div className="p-6 relative -mt-6">
-                        <h3 className="text-xl font-bold mb-3 group-hover:text-indigo-300 transition-colors duration-300">{plan.title}</h3>
-                        <p className="text-gray-300">{plan.description}</p>
-                        
-                        <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
-                          <span className="text-xs text-gray-400">
-                            {index === 0 ? "Starting June 2025" : index === 1 ? "Late 2025" : "Ongoing"}
-                          </span>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 rounded-full px-3 hover:bg-white/10 text-indigo-300"
-                          >
-                            Learn more
-                            <ArrowRight className="ml-1 h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="mt-12 p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 text-center"
-              >
-                <h3 className="text-2xl font-bold mb-3">Want to stay connected?</h3>
-                <p className="text-gray-300 max-w-2xl mx-auto mb-6">
-                  This isn't goodbye, it's just a new chapter. Let's keep in touch as I embark on this new journey.
-                </p>
-                
-                <div className="flex flex-wrap gap-4 justify-center">
-                  <Button variant="outline" className="rounded-full px-6 border-indigo-500/50 hover:bg-indigo-500/20">
-                    <Linkedin className="mr-2 h-4 w-4" />
-                    Connect on LinkedIn
-                  </Button>
-                  <Button variant="outline" className="rounded-full px-6 border-blue-500/50 hover:bg-blue-500/20">
-                    <Twitter className="mr-2 h-4 w-4" />
-                    Follow on Twitter
-                  </Button>
-                  <Button variant="outline" className="rounded-full px-6 border-pink-500/50 hover:bg-pink-500/20">
-                    <Send className="mr-2 h-4 w-4" />
-                    Send me an email
-                  </Button>
-                </div>
-              </motion.div>
-            </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
+
+      <FormModal
+        isOpen={showMilestoneModal}
+        onClose={() => {
+          setShowMilestoneModal(false)
+          setEditingMilestone(null)
+        }}
+        onSubmit={(data) => {
+          if (editingMilestone) {
+            handleEditMilestone(editingMilestone.id, data)
+          } else {
+            handleAddMilestone(data)
+          }
+        }}
+        title={editingMilestone ? "Edit Milestone" : "Add Milestone"}
+        type="milestone"
+        initialData={editingMilestone}
+      />
+
+      <FormModal
+        isOpen={showPlanModal}
+        onClose={() => {
+          setShowPlanModal(false)
+          setEditingPlan(null)
+        }}
+        onSubmit={(data) => {
+          if (editingPlan) {
+            handleEditFuturePlan(editingPlan.id, data)
+          } else {
+            handleAddFuturePlan(data)
+          }
+        }}
+        title={editingPlan ? "Edit Plan" : "Add Plan"}
+        type="plan"
+        initialData={editingPlan}
+      />
+
+      <FormModal
+        isOpen={showAchievementModal}
+        onClose={() => {
+          setShowAchievementModal(false)
+          setEditingAchievement(null)
+        }}
+        onSubmit={(data) => {
+          if (editingAchievement) {
+            handleEditAchievement(editingAchievement.id, data)
+          } else {
+            handleAddAchievement(data)
+          }
+        }}
+        title={editingAchievement ? "Edit Achievement" : "Add Achievement"}
+        type="milestone"
+        initialData={editingAchievement}
+      />
     </div>
   )
 }

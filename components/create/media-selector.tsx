@@ -30,6 +30,7 @@ export default function MediaSelector({ gifs, audio, soundEffect, onUpdate }: Me
 
   // Mock GIFs for the demo
   const mockGifs = [
+    // Dramatic exits
     "https://media.giphy.com/media/l0MYGb1LuZ3n7dRnO/giphy.gif",
     "https://media.giphy.com/media/3o7btQsLqXMJAPu6Na/giphy.gif",
     "https://media.giphy.com/media/l0HlvtIPzPdt2usKs/giphy.gif",
@@ -38,7 +39,31 @@ export default function MediaSelector({ gifs, audio, soundEffect, onUpdate }: Me
     "https://media.giphy.com/media/3o7btQMdq4a44tXod2/giphy.gif",
     "https://media.giphy.com/media/3o7btPCwlw9CaFH9Cg/giphy.gif",
     "https://media.giphy.com/media/3o7btSHUTdraHEsx0Y/giphy.gif",
-  ]
+    // Funny exits
+    "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif",
+    "https://media.giphy.com/media/3orieQEA8pQkS6vZyY/giphy.gif",
+    "https://media.giphy.com/media/3o6Zt6ML6BklcajjsA/giphy.gif",
+    "https://media.giphy.com/media/3o6Zt8zb1Pp2v3A4lC/giphy.gif",
+    // Sad exits
+    "https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif",
+    "https://media.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif",
+    "https://media.giphy.com/media/3o6Zt7xTgY6k5l5hFe/giphy.gif",
+    // Heartfelt exits
+    "https://media.giphy.com/media/3o6Zt8zb1Pp2v3A4lC/giphy.gif",
+    "https://media.giphy.com/media/3o6Zt6ML6BklcajjsA/giphy.gif",
+    "https://media.giphy.com/media/3orieQEA8pQkS6vZyY/giphy.gif",
+    // Calm exits
+    "https://media.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif",
+    "https://media.giphy.com/media/3o6Zt7xTgY6k5l5hFe/giphy.gif",
+    "https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif",
+    // Extra variety
+    "https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif",
+    "https://media.giphy.com/media/13CoXDiaCcCoyk/giphy.gif",
+    "https://media.giphy.com/media/26ufnwz3wDUli7GU0/giphy.gif",
+    "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
+    "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+    "https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif",
+  ];
 
   const handleGifSelect = (gif: string) => {
     if (selectedGifs.includes(gif)) {
