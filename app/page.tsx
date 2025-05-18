@@ -253,7 +253,7 @@ export default function LandingPage() {
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        className="relative h-screen w-screen overflow-hidden bg-gradient-to-b from-black to-slate-950 text-white"
+        className="relative h-screen w-full overflow-hidden bg-gradient-to-b from-black to-slate-950 text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
