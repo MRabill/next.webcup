@@ -10,6 +10,10 @@ import { FeatureCard } from "@/components/feature-card"
 import { BackgroundAnimation } from "@/components/background-animation"
 import AudioPlayer from "@/components/ui/audio-player"
 import ConstellationBackground from "@/components/effects/constellation-background"
+import Image1 from "./images/Group 32.png"
+import Image2 from "./images/Group 31.png"
+import Image3 from "./images/image 42.png"
+import Footer from "./LandingFooter"
 
 // Typing effect hook
 function useTypingEffect(text: string, speed: number, resetKey: any) {
@@ -391,7 +395,70 @@ export default function LandingPage() {
           ))}
         </div>
 
+
       </motion.div>
+
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="relative z-10 w-full bg-slate-950 backdrop-blur-md text-white py-20 px-6 md:px-16 flex flex-col md:flex-row  justify-between gap-12"
+      >
+        {/* Text Content (Left) */}
+
+        <div className="max-w-xl text-left">
+          <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
+            Choose according to your mood
+          </h3>
+          <p className="text-lg text-gray-300 mb-6">
+            Whether it's dramatic, heartfelt, funny or a quiet farewell — your final message deserves to be remembered.
+            Let your story echo beyond the end.
+          </p>
+        </div>
+        {/* Image (Right) */}
+        <div className="w-full md:w-1/2 max-w-md">
+          <motion.img
+            src={Image1.src}
+            alt="Exit illustration"
+            className="w-full h-auto rounded-xl"
+            animate={{
+              y: [0, -10, 0],
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
+
+        <div className="max-w-xl text-left">
+          <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
+            AI prompt and gif support
+          </h3>
+          <p className="text-lg text-gray-300 mb-6">
+            Say more than goodbye. Use AI prompts and GIFs to craft a farewell that hits hard — or heals softly.
+          </p>
+        </div>
+        <div className="w-full md:w-1/2 max-w-md">
+          <motion.img
+            src={Image2.src}
+            alt="Exit illustration"
+            className="w-full h-auto rounded-xl"
+            animate={{
+              y: [0, -10, 0],
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
+
+      </motion.section>
+      <Footer />
     </AnimatePresence>
   )
 }
