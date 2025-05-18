@@ -194,9 +194,11 @@ export default function GalleryPage() {
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div className="flex items-center justify-between w-full md:w-auto">
-            <div>
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">Exit Page Gallery</h1>
-              <p className="text-slate-600 dark:text-gray-300">Browse memorable departures from the community</p>
+            <div className="flex items-center">
+              <Sparkles className="h-6 w-6 text-pink-500 mr-2" />
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-red-500">
+                theend.page
+              </h1>
             </div>
             <div className="md:hidden">
               <ThemeToggle />
@@ -214,7 +216,7 @@ export default function GalleryPage() {
           </div>
         </div>
         <section className="mb-12 px-4">
-          <h2 className="mb-6 text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
+          <h2 className="mb-6 text-3xl font-bold text-center text-transparent bg-clip-text text-white">
             Hall of Fame 🏆
           </h2>
 
@@ -269,7 +271,7 @@ export default function GalleryPage() {
                   </div>
                   <div className="mt-3 flex justify-center">
                     <Link href={`/preview`} className="w-full">
-                      <Button variant="outline" className="w-full border-white/20 text-white hover:border-purple-400 hover:text-purple-400 transition">
+                      <Button variant="outline" className="w-full border-white/20 text-white">
                         View Exit Page
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
@@ -281,8 +283,8 @@ export default function GalleryPage() {
           </div>
         </section>
 
-        <h2 className="mb-6 text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
-         Cast your vote for the next Hall of Fame member!
+        <h2 className="mb-6 text-2xl text-center text-transparent bg-clip-text text-white">
+          Cast your vote for the next Hall of Fame member!
         </h2>
 
         <Tabs defaultValue="trending" value={activeTab} onValueChange={setActiveTab} className="w-full">

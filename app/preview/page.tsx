@@ -674,23 +674,12 @@ export default function PreviewPage() {
       {/* Navigation controls at the very top */}
       <div className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm bg-slate-900/30 border-b border-white/5 shadow-sm">
         <div className="max-w-screen-2xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
-          <Button variant="ghost" onClick={() => router.push("/create")} className="text-white hover:bg-white/10 rounded-full transition-all duration-200 flex items-center">
+          <Button variant="ghost" onClick={() => router.push("/gallery")} className="text-white hover:bg-white/10 rounded-full transition-all duration-200 flex items-center">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            <span>Back to Editor</span>
+            <span>Go to Gallery</span>
           </Button>
           
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMute}
-              className="h-9 w-9 text-white hover:bg-white/10 rounded-full transition-colors duration-200"
-            >
-              {isMuted ? 
-                <VolumeX className="h-4 w-4 transition-transform hover:scale-110" /> : 
-                <Volume2 className="h-4 w-4 transition-transform hover:scale-110" />
-              }
-            </Button>
             
             <Popover>
               <PopoverTrigger asChild>
@@ -768,7 +757,6 @@ export default function PreviewPage() {
                 </Button>
               </PopoverContent>
             </Popover>            
-            <ThemeToggle />
           </div>
         </div>
       </div>
@@ -823,7 +811,7 @@ export default function PreviewPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="mt-12"
+            className="mt-12 z-10"
           >
             <Button 
               variant="outline" 
@@ -832,7 +820,7 @@ export default function PreviewPage() {
                 document.getElementById('blog-section')?.scrollIntoView({ behavior: 'smooth' })
                 setActiveTab('message')
               }}
-              className="backdrop-blur-md bg-white/10 border-white/20 hover:bg-white/20 text-white rounded-full px-6 font-medium"
+              className="backdrop-blur-md bg-white/10 border-white/20 hover:bg-white/20 text-white rounded-full px-6 font-medium z-10"
             >
               Read My Story
               <ArrowRight className="ml-2 h-4 w-4" />
