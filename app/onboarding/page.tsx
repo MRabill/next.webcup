@@ -241,7 +241,7 @@ export default function OnboardingPage() {
             />
             {/* Main title with typewriter effect */}
             <motion.h1
-              className="mt-6 text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-center"
+              className="mt-6 mb-4 text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.7 }}
@@ -250,7 +250,7 @@ export default function OnboardingPage() {
             </motion.h1>
             {/* Tagline with fade-in */}
             <motion.p
-              className="text-xl text-gray-300 mt-4 max-w-lg text-center"
+              className="text-lg text-gray-300 mt-4 max-w-lg text-center px-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 1.2 }}
@@ -309,10 +309,10 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-5xl font-bold mb-2 text-center bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
+          <h1 className="text-4xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
             Create Your End Page
           </h1>
-          <p className="text-xl text-center mb-10 text-gray-300">
+          <p className="text-lg text-center mb-10 text-gray-400">
             Tell us about your departure and choose how you want to express it
           </p>
         </motion.div>
@@ -374,12 +374,12 @@ export default function OnboardingPage() {
                           />
                         </motion.div>
                       </div>
-                    </CardContent>                  <CardFooter className="flex justify-center">
+                    </CardContent>                  
+                    <CardFooter className="flex justify-center">
                       <Button
                         onClick={nextStep}
                         disabled={!username || !email}
-                        className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 h-12 text-lg"
-                      >
+                        variant="gradient" >
                         <span>Go to Create Page</span>
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>

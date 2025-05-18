@@ -485,7 +485,7 @@ export default function PreviewPage() {
   }
 
   const generateUniqueLink = () => {
-    return "codewaresreload.maurice.webcup.hodi.host/exit-r6tgsr"
+    return "https://codewaresreload.maurice.webcup.hodi.host/preview/"
   }
 
   const currentMusic = getMusicForMood(mood)

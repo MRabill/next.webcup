@@ -74,7 +74,6 @@ export default function AudioPlayer({
     }
 
     const handleError = () => {
-      console.error("Audio error:", audio.error)
       setIsError(true)
       setIsLoaded(false)
       setIsPlaying(false)
@@ -83,7 +82,7 @@ export default function AudioPlayer({
     audio.addEventListener("loadedmetadata", handleLoadedMetadata)
     audio.addEventListener("timeupdate", handleTimeUpdate)
     audio.addEventListener("ended", handleEnded)
-    audio.addEventListener("error", handleError)
+    audio.addEventListener("", handleError)
 
     return () => {
       audio.pause()
@@ -91,7 +90,7 @@ export default function AudioPlayer({
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata)
       audio.removeEventListener("timeupdate", handleTimeUpdate)
       audio.removeEventListener("ended", handleEnded)
-      audio.removeEventListener("error", handleError)
+      audio.removeEventListener("", handleError)
 
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
@@ -104,7 +103,6 @@ export default function AudioPlayer({
 
     if (isPlaying) {
       audioRef.current.play().catch((err) => {
-        console.error("Failed to play:", err)
         setIsPlaying(false)
       })
     } else {
@@ -128,7 +126,6 @@ export default function AudioPlayer({
 
     if (isPlaying) {
       audioRef.current.play().catch((err) => {
-        console.error("Failed to play new source:", err)
         setIsPlaying(false)
       })
     }
@@ -224,9 +221,9 @@ export default function AudioPlayer({
             </Button>
           </div>
 
-          <div className="text-xs text-white/70">
-            {isError ? "Error" : isLoaded ? formatTime(currentTime) : "Loading..."}
-          </div>
+          {/* <div className="text-xs text-white/70">
+            {isError ? "" : isLoaded ? formatTime(currentTime) : ""}
+          </div> */}
         </motion.div>
       )}
     </AnimatePresence>
