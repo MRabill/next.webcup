@@ -324,7 +324,7 @@ export default function CreatePage() {
                   onClick={handlePublish}
                   variant="gradient"                >
                   <Save className="mr-2 h-4 w-4" />
-                  Publish Exit Page
+                  Publish
                 </Button>
               ) : (
                 <Button onClick={handleNext} disabled={isNextDisabled()} variant="gradient">

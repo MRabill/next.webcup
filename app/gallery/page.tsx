@@ -213,75 +213,77 @@ export default function GalleryPage() {
             </Link>
           </div>
         </div>
-       <section className="mb-12 px-4">
-  <h2 className="mb-6 text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
-    Hall of Fame 🏆
-  </h2>
+        <section className="mb-12 px-4">
+          <h2 className="mb-6 text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
+            Hall of Fame 🏆
+          </h2>
 
-  <div className="flex flex-col sm:flex-row justify-center items-center sm:items-end gap-8 sm:gap-4 max-w-5xl mx-auto">
-    {[
-      {
-        rank: "#2",
-        title: "So Long, and Thanks...",
-        name: "Jamie Smith",
-        bg: "#C0C0C0",
-        height: "h-44",
-      },
-      {
-        rank: "#1",
-        title: "My Dramatic Exit...",
-        name: "Alex Johnson",
-        bg: "#FFD700",
-        height: "h-52",
-      },
-      {
-        rank: "#3",
-        title: "With a Heavy Heart...",
-        name: "Taylor Wilson",
-        bg: "#CD7F32",
-        height: "h-40",
-      },
-    ].map(({ rank, title, name, bg, height }, idx) => (
-      <div key={idx} className="flex flex-col items-center relative w-full max-w-[540px] sm:max-w-[260px] md:max-w-[280px]">
- 
-        {/* Glow Effect */}
-        <div
-          className={`absolute -z-10 w-full ${height} rounded-xl`}
-          style={{
-            backgroundColor: `${bg}80`,
-            filter: "blur(40px)",
-            opacity: 0.3,
-          }}
-        />
+          <div className="flex flex-col sm:flex-row justify-center items-center sm:items-end gap-8 sm:gap-4 max-w-5xl mx-auto">
+            {[
+              {
+                rank: "#2",
+                title: "So Long, and Thanks...",
+                name: "Jamie Smith",
+                bg: "#C0C0C0",
+                height: "h-44",
+              },
+              {
+                rank: "#1",
+                title: "My Dramatic Exit...",
+                name: "Alex Johnson",
+                bg: "#FFD700",
+                height: "h-52",
+              },
+              {
+                rank: "#3",
+                title: "With a Heavy Heart...",
+                name: "Taylor Wilson",
+                bg: "#CD7F32",
+                height: "h-40",
+              },
+            ].map(({ rank, title, name, bg, height }, idx) => (
+              <div key={idx} className="flex flex-col items-center relative w-full max-w-[540px] sm:max-w-[260px] md:max-w-[280px]">
 
-        <span className="mb-2 font-bold text-white">{rank}</span>
-        <div
-          className={`rounded-xl shadow-md p-4 w-full ${height} text-white text-left flex flex-col justify-between`}
-          style={{
-            backgroundColor: `${bg}4D`,
-            border: `1px solid ${bg}66`,
-            backdropFilter: "blur(8px) saturate(150%)",
-          }}
-        >
-          <div>
-            <h3 className="font-bold truncate">{title}</h3>
-            <p className="text-sm mt-2">{name}</p>
+                {/* Glow Effect */}
+                <div
+                  className={`absolute -z-10 w-full ${height} rounded-xl`}
+                  style={{
+                    backgroundColor: `${bg}80`,
+                    filter: "blur(40px)",
+                    opacity: 0.3,
+                  }}
+                />
+
+                <span className="mb-2 font-bold text-white">{rank}</span>
+                <div
+                  className={`rounded-xl shadow-md p-4 w-full ${height} text-white text-left flex flex-col justify-between`}
+                  style={{
+                    backgroundColor: `${bg}4D`,
+                    border: `1px solid ${bg}66`,
+                    backdropFilter: "blur(8px) saturate(150%)",
+                  }}
+                >
+                  <div>
+                    <h3 className="font-bold truncate">{title}</h3>
+                    <p className="text-sm mt-2">{name}</p>
+                  </div>
+                  <div className="mt-3 flex justify-center">
+                    <Link href={`/preview`} className="w-full">
+                      <Button variant="outline" className="w-full border-white/20 text-white hover:border-purple-400 hover:text-purple-400 transition">
+                        View Exit Page
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="mt-3 flex justify-center">
-            <Link href={`/preview`} className="w-full">
-              <Button variant="outline" className="w-full border-white/20 text-white hover:border-purple-400 hover:text-purple-400 transition">
-                View Exit Page
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
-</section>
+        </section>
 
-
+        <h2 className="mb-6 text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
+         Cast your vote for the next Hall of Fame member!
+        </h2>
 
         <Tabs defaultValue="trending" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
